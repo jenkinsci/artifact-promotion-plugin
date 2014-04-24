@@ -20,3 +20,6 @@ Please feel free to contribute for other repository servers like
 * Apache Archiva
 
 Please feel to come up with your suggestions.
+
+# Useful links
+* Plugin Wiki page: https://wiki.jenkins-ci.org/display/JENKINS/ArtifactPromotionPlugin
