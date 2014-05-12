@@ -144,6 +144,7 @@
                         <exclude>**/README</exclude>
                         <exclude>src/test/resources/**</exclude>
                         <exclude>src/main/resources/**</exclude>
+                        <exclude>work/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
