@@ -31,7 +31,7 @@
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.2.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <inceptionYear>2014</inceptionYear>
     <licenses>
