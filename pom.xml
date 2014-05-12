@@ -48,8 +48,8 @@
     </description>
 
     <scm>
-        <connection>scm:git:ssh://github.com/jenkinsci/artifact-promotion-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/artifact-promotion-plugin.git</developerConnection>
+        <connection>scm:git:https://github.com/jenkinsci/artifact-promotion-plugin.git</connection>
+        <developerConnection>scm:git:https://git@github.com/jenkinsci/artifact-promotion-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/artifact-promotion-plugin</url>
     </scm>
 
