@@ -32,11 +32,11 @@ import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 
-import java.io.IOException;
 import java.io.PrintStream;
-
-import javax.servlet.ServletException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import net.sf.json.JSONObject;
 
@@ -64,31 +64,19 @@ public class ArtifactPromotionBuilder extends Builder {
      * The POM extension.
      */
     private final String POMTYPE = "pom";
-    
-    /**
-     * The URL path delimiter.
-     */
-    private static final String DELI = "/";
-    
-    /**
-     * Nexus returns status code 204 then deleted successful via REsT API.
-     * 
-     * TODO move this into a nexus specific class
-     */
-    private static final int NEXUS_DELETE_SUCESS = 204;
-
+        
     private final String groupId;
     private final String artifactId;
     private final String version;
     private final String extension;
-    
-    // Fields for UI
-    
+        
     /**
      * The location of the local repository system. In this repository the downloaded
      * artifact will be saved.
      */
     private final String localRepoLocation = "target/local-repo";
+    
+    // Fields for UI
     
     /**
      * The repository there the artifact is. In a normal case a staging repository.
@@ -96,24 +84,26 @@ public class ArtifactPromotionBuilder extends Builder {
     private final String stagingRepository; 
     
     /**
-     * FIXME use credentials plugin
+     * The User for the staging Repository
      */
     private final String stagingUser;
     
     /**
-     * FIXME use credentials plugin
+     * The staging secret. 
+     * We should still save the passwords using the credentials plugin
+     * but its so bad documented :-( 
      */
-    private final String stagingPW;
+    private final Secret stagingPW;
     
     /**
-     * FIXME use credentials plugin
+     * The user for the release repo.
      */
     private final String releaseUser;
     
     /**
-     * FIXME use credentials plugin
+     * The release repo secret
      */
-    private final String releasePW;
+    private final Secret releasePW;
 
     /**
      * The repository into the artifact has to be moved.
@@ -134,18 +124,19 @@ public class ArtifactPromotionBuilder extends Builder {
      * @param version The version of the artifact.
      * @param extension The file extension of the artifact.
      * @param stagingRepository The URL of the staging repository.
-     * @param stagingUser User to be used on staging repo. Subject to change.
-     * @param stagingPW Password to be used on staging repo. Subject to change.
-     * @param releaseUser User to be used on release repo. Subject to change.
-     * @param releasePW Password to be used on release repo. Subject to change.
+     * @param stagingUser User to be used on staging repo. 
+     * @param stagingPW Password to be used on staging repo.
+     * @param releaseUser User to be used on release repo.
+     * @param releasePW Password to be used on release repo.
      * @param releaseRepository The URL of the staging repository
      * @param debug Flag for debug output. Currently not used.
      */
     @DataBoundConstructor
     public ArtifactPromotionBuilder(String groupId, String artifactId, String version, String extension,
-            String stagingRepository, String stagingUser, String stagingPW,
-            String releaseUser, String releasePW, String releaseRepository, boolean debug) {
+            String stagingRepository, String stagingUser, Secret stagingPW,
+            String releaseUser, Secret releasePW, String releaseRepository, boolean debug) {
         super();
+        
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
@@ -157,15 +148,13 @@ public class ArtifactPromotionBuilder extends Builder {
         this.releasePW = releasePW;
         this.releaseRepository = releaseRepository;
         this.debug = debug;
+        
     }
     
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
 
         PrintStream logger = listener.getLogger();
-        
-        //TODO remove me
-        //logger.println(this.toString());
 
         AetherInteraction aether = new AetherInteraction(logger);
         
@@ -180,7 +169,7 @@ public class ArtifactPromotionBuilder extends Builder {
         
         //pull the artifact and its pom from the staging repository 
         logger.println("Get Artifact and corresponding POM");
-        RemoteRepository aetherStagingRepo = aether.getRepository(stagingUser, stagingPW, "dummid", stagingRepository);
+        RemoteRepository aetherStagingRepo = aether.getRepository(stagingUser, stagingPW, "noid", stagingRepository);
         Artifact artifact;
         Artifact artifactpom;
         try {
@@ -192,11 +181,13 @@ public class ArtifactPromotionBuilder extends Builder {
             return false;
         }
        
-        aether.traceArtifactInfo(artifact);
-        aether.traceArtifactInfo(artifactpom);
+        if (debug) {
+            aether.traceArtifactInfo(artifact);
+            aether.traceArtifactInfo(artifactpom);
+        }
         
         //upload the artifact and its pom to the release repos
-        RemoteRepository aetherReleaseRepo = aether.getRepository(releaseUser, releasePW, "dummy", releaseRepository);
+        RemoteRepository aetherReleaseRepo = aether.getRepository(releaseUser, releasePW, "noid", releaseRepository);
         DeployResult result = null;
         try {
             result = aether.deployArtifact(session, system, aetherReleaseRepo, artifact, artifactpom);
@@ -204,19 +195,19 @@ public class ArtifactPromotionBuilder extends Builder {
             logger.println("Could not deploy artifact to " + releaseRepository + " using User " + releaseUser + ":" + e.getMessage());
             return false;
         }
-        aether.traceDeployResult(result);
+        
+        if (debug) {
+            aether.traceDeployResult(result);            
+        }
         
         // remove the artifact from the statging repository
         // TODO This is specific for Nexus OSS and should be done in a changable/configurable way.
-        IDeleteArtifact deleter = new DeleteArtifactNexusOSS(logger);
+        IDeleteArtifact deleter = new DeleteArtifactNexusOSS(logger, debug);
         deleter.deleteArtifact(aetherStagingRepo, artifact);
 
         return true;
     }
         
-    // Overridden for better type safety.
-    // If your plugin doesn't really define any property on Descriptor,
-    // you don't have to do this.
     @Override
     public ArtifactPromotionDescriptorImpl getDescriptor() {
         return (ArtifactPromotionDescriptorImpl)super.getDescriptor();
@@ -236,6 +227,8 @@ public class ArtifactPromotionBuilder extends Builder {
             load();
         }
 
+        // Form validation
+        
         /**
          * Performs on-the-fly validation of the form field 'name'.
          *
@@ -244,17 +237,56 @@ public class ArtifactPromotionBuilder extends Builder {
          * @return
          *      Indicates the outcome of the validation. This is sent to the browser.
          */
-        public FormValidation doCheckArtifactId(@QueryParameter String value)
-                throws IOException, ServletException {
+        public FormValidation doCheckArtifactId(@QueryParameter String value) {
             if (value.length() == 0)
-                return FormValidation.error("Please set a artifactId");
-            if (value.length() < 4)
-                return FormValidation.warning("Isn't the artifactID too short?");
+                return FormValidation.error("Please set an ArtifactId!");
             return FormValidation.ok();
         }
+        
+        public FormValidation doCheckGroupId(@QueryParameter String value) {
+            if (value.length() == 0)
+                return FormValidation.error("Please set a GroupId!");
+            return FormValidation.ok();
+        }
+        
+        public FormValidation doCheckVersion(@QueryParameter String value) {
+            if (value.length() == 0)
+                return FormValidation.error("Please set a Version for your artifact!");
+            return FormValidation.ok();
+        }
+        
+        public FormValidation doCheckStagingRepository(@QueryParameter String value) {
+            return checkURI(value);
+        }
+        
+        public FormValidation doCheckReleaseRepository(@QueryParameter String value) {
+            return checkURI(value);
+        }        
+        
+        /**
+         * Checks using java.net.URI constructor if a given URL is valid.
+         * This is a poor mans solution. An alternative would be using apache commons URIValidator but
+         * don't wanna import additional lib for this.
+         * 
+         * @param value
+         * @return
+         */
+        private FormValidation checkURI(String value) {
+            if (value.length() == 0) {
+                return FormValidation.error("Please set an URL for the staging repository!");
+            } else {
+                try {
+                    new URI(value);
+                } catch (URISyntaxException e) {
+                    return FormValidation.error("The URI is malformed. Please consult RFC2396 for a correct URI.");
+                }
+            }
+            return FormValidation.ok();
+        }        
+        
+        //TODO connectivity tests
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-            // Indicates that this builder can be used with all kinds of project types 
             return true;
         }
 
@@ -262,7 +294,7 @@ public class ArtifactPromotionBuilder extends Builder {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Artifact Promotion";
+            return "Single Artifact Promotion";
         }
 
         @Override
@@ -302,7 +334,7 @@ public class ArtifactPromotionBuilder extends Builder {
         return stagingUser;
     }
 
-    public String getStagingPW() {
+    public Secret getStagingPW() {
         return stagingPW;
     }
 
@@ -310,7 +342,7 @@ public class ArtifactPromotionBuilder extends Builder {
         return releaseUser;
     }
 
-    public String getReleasePW() {
+    public Secret getReleasePW() {
         return releasePW;
     }
 

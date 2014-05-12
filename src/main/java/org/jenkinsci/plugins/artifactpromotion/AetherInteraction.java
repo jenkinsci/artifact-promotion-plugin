@@ -22,6 +22,8 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import hudson.util.Secret;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +87,8 @@ public class AetherInteraction {
 
     /** Get ('resolve') the artifact from a repository server.
      * If the artifact is in local repository used by the plugin it will not
-     * download it from the server and use the local silently.
+     * download it from the server and use the local silently. This local repo
+     * will be cleaned by 'mvn clean' as the default location is target/local-repo. 
      * 
      * @param session
      * @param system
@@ -124,21 +127,33 @@ public class AetherInteraction {
     }
 
     /**
-     * TODO document me.
+     * Creates a RemoteRepository object to work with. If a User or Password 
+     * is given the authentication information is set, too. 
      * 
      * @param user
      * @param password
      * @param repoId
      * @param repoURL
-     * @return
+     * @return The remote repository to connect to.
      */
-    protected RemoteRepository getRepository(final String user, final String password, final String repoId,
+    protected RemoteRepository getRepository(final String user, final Secret password, final String repoId,
             final String repoURL) {
-        Authentication authentication = new AuthenticationBuilder().addUsername(user)
-                .addPassword(password).build();
-        return new RemoteRepository.Builder(repoId, "default",
-                repoURL).setAuthentication(authentication)
-                .build();
+        
+        
+        if (user == null || password == null || repoId == null || repoURL == null) 
+            throw new IllegalArgumentException("You cant provide null objects here.");
+        
+        RemoteRepository.Builder builder = new RemoteRepository.Builder(repoId, "default",
+                repoURL);
+        
+        if (user.length() > 0 || Secret.toString(password).length() > 0 ) {
+            Authentication authentication = new AuthenticationBuilder().addUsername(user)
+                    .addPassword(Secret.toString(password)).build(); 
+            
+            builder = builder.setAuthentication(authentication);
+        }
+        
+        return builder.build();
     }
 
     protected void traceArtifactInfo(Artifact artifact) {
@@ -163,14 +178,14 @@ public class AetherInteraction {
         traceMetadata(allMetadata);
     }
 
-    protected static void traceMetadata(Collection<Metadata> allMetadata) {
+    protected void traceMetadata(Collection<Metadata> allMetadata) {
         for (Metadata metadata : allMetadata) {
 
-            System.out.println("ArtifactID : " + metadata.getArtifactId());
-            System.out.println("GroupID : " + metadata.getGroupId());
-            System.out.println("Typ : " + metadata.getType());
-            System.out.println("Version : " + metadata.getVersion());
-            System.out.println("Nature : " + metadata.getNature());
+            logger.println("ArtifactID : " + metadata.getArtifactId());
+            logger.println("GroupID : " + metadata.getGroupId());
+            logger.println("Typ : " + metadata.getType());
+            logger.println("Version : " + metadata.getVersion());
+            logger.println("Nature : " + metadata.getNature());
             Map<String, String> props = metadata.getProperties();
             for (String key : props.keySet()) {
                 System.out.println("Key:" + key + " Value: " + props.get(key));
