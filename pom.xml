@@ -32,7 +32,7 @@
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <inceptionYear>2014</inceptionYear>
     <licenses>
@@ -41,7 +41,7 @@
             <comments>All source code is under the MIT license.</comments>
         </license>
     </licenses>
-    <url></url>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/ArtifactPromotionPlugin</url>
     <description>
     This plugin promotes an artifact by moving it from an staging repository to a release repository.
     More info to come.
@@ -53,8 +53,12 @@
         <url>https://github.com/jenkinsci/artifact-promotion-plugin</url>
     </scm>
 
-    <!-- <distributionManagement> <repository> <id>maven.jenkins-ci.org</id> <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url> 
-        </repository> </distributionManagement> -->
+    <distributionManagement>
+        <repository>
+            <id>maven.jenkins-ci.org</id>
+            <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
 
     <developers>
         <developer>
@@ -69,6 +73,7 @@
         <aetherVersion>0.9.0.v20140226</aetherVersion>
         <mavenVersion>3.1.0</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
+        <jerseyVersion>1.9.1</jerseyVersion>
     </properties>
 
     <dependencies>
@@ -115,7 +120,7 @@
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
-            <version>1.9.1</version>
+            <version>${jerseyVersion}</version>
         </dependency>
     </dependencies>
 
@@ -149,10 +154,6 @@
                 </configuration>
                 <executions>
                     <execution>
-                    <!-- Execution should be done manualy -->    
-                    <!-- 
-                        <phase>validate</phase>
-                     -->
                         <goals>
                             <goal>format</goal>
                         </goals>
@@ -178,4 +179,12 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <issueManagement>
+        <url>https://github.com/jenkinsci/artifact-promotion-plugin/issues</url>
+        <system>Github</system>
+    </issueManagement>
+    <ciManagement>
+        <system>Jenkins</system>
+        <url>https://jenkins.ci.cloudbees.com/job/plugins/job/artifact-promotion-plugin/</url>
+    </ciManagement>
 </project>
