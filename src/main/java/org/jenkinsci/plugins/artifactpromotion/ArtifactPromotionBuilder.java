@@ -142,7 +142,7 @@ public class ArtifactPromotionBuilder extends Builder {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
-        this.extension = extension;
+        this.extension = extension == null ? "jar" : extension;
         this.stagingRepository = stagingRepository;
         this.stagingUser = stagingUser;
         this.stagingPW = stagingPW;
