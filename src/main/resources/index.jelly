@@ -2,5 +2,7 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is a sample to explain how to write a Jenkins plugin.
+  This is a simple plugin to promote artifacts. 
+  The promotion is done on the repository server(s) by moving the artifact from a 'staging' repository into a 'release' repository. Currently,
+  only Sonatype Nexus (Open Source) is supprted.
 </div>
