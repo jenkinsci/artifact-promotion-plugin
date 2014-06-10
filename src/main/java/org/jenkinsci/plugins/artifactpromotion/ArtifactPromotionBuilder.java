@@ -52,7 +52,9 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * TODO Document me!
+ * In this class we encapsulate the process of moving an artifact from one repository into another one.
+ * 
+ * 
  * TODO make me more flexible to so support different repository servers, at least nexus pro, artifactory and archiva.
  * 
  * @author Halil-Cem Guersoy (hcguersoy@gmail.com)
