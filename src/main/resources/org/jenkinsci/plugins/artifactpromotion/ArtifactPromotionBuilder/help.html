@@ -1,0 +1,9 @@
+<div>Here you can configure the artifact promotion plugin for single artifacts.
+In the first section (<i>Artifact Information</i>) you enter the coordinates of your artifact.<br/>
+In the <i>Staging Repository Information</i> section you tell there your source repository is, e.g. http://192.168.56.24/nexus/content/repositories/staging/.<br/>
+In the following section <i>Release Repository Information</i>, you enter the information about the target repository, e.g.  http://192.168.56.24/nexus/content/repositories/releases/.
+In both sections, you can add user credentials. If you do, the connection to the repository servers will be done using these credentials. If you don't suppot credentials, 
+the access will be done without any authentication. <br/>
+Both repositorys should be <i>release</i> repositories, not snapshot repos!
+The password(s) will be saved currently using the standard Jenkins functionality to save those. It's planned to use in the future the credentials plugin.
+</div>
