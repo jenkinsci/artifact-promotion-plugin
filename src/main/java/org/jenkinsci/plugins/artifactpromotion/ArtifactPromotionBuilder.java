@@ -204,7 +204,7 @@ public class ArtifactPromotionBuilder extends Builder {
         
         // remove the artifact from the statging repository
         // TODO This is specific for Nexus OSS and should be done in a changable/configurable way.
-        IDeleteArtifact deleter = new DeleteArtifactNexusOSS(logger, debug);
+        IDeleteArtifact deleter = new DeleteArtifactNexusOSS(stagingUser, stagingPW, logger, debug);
         deleter.deleteArtifact(aetherStagingRepo, artifact);
 
         return true;

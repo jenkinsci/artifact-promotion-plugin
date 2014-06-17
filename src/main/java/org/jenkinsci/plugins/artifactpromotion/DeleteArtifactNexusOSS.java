@@ -22,6 +22,8 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import hudson.util.Secret;
+
 import java.io.PrintStream;
 
 import org.eclipse.aether.artifact.Artifact;
@@ -59,15 +61,21 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact {
     
     private boolean debug;
     
+    private String user;
+    
+    private Secret password;
+    
     /**
      * The default constructor.
      * 
      * @param logger A simple PrintStream, obtained from Jenkins.
      */
-    public DeleteArtifactNexusOSS(final PrintStream logger, final boolean debug) {
+    public DeleteArtifactNexusOSS(final String user, final Secret password, final PrintStream logger, final boolean debug) {
         super();
         this.logger = logger;
         this.debug = debug;
+        this.user = user;
+        this.password = password;
     }
 
     /** 
@@ -84,10 +92,9 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact {
         
         if (debug) logger.println("Request URL is: [" + requestURL + "]");
 
-        String user = "kunlaboro";
-        String password = "NexusKunlaboro";
-        String auth = new String(Base64.encode(user + ":" + password));
-
+        //TODO needs rework for anonymous access
+        String auth = new String(Base64.encode(this.user + ":" + Secret.toString(this.password)));
+        
         Client client = Client.create();
         WebResource webResource = client.resource(requestURL);
         ClientResponse response = webResource.header("Authorization", "Digest " + auth).type("application/json")
