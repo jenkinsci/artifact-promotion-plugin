@@ -34,6 +34,7 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -73,10 +74,10 @@ public class ArtifactPromotionBuilder extends Builder {
     private final String extension;
         
     /**
-     * The location of the local repository system. In this repository the downloaded
+     * The location of the local repository system relative to the workspace. In this repository the downloaded
      * artifact will be saved.
      */
-    private final String localRepoLocation = "target/local-repo";
+    private final String localRepoLocation = "target" + File.separator + "local-repo";
     
     // Fields for UI
     
@@ -150,19 +151,22 @@ public class ArtifactPromotionBuilder extends Builder {
         this.releasePW = releasePW;
         this.releaseRepository = releaseRepository;
         this.debug = debug;
-        
     }
     
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
 
         PrintStream logger = listener.getLogger();
+        
+        String localRepoPath = build.getWorkspace() + File.separator + this.localRepoLocation;
+        
+        if (debug) logger.println("Local repository path: [" + localRepoPath + "]");
 
         AetherInteraction aether = new AetherInteraction(logger);
         
         logger.println("Initialising aether");
         RepositorySystem system = aether.getNewRepositorySystem();
-        RepositorySystemSession session = aether.getRepositorySystemSession(system, this.localRepoLocation);
+        RepositorySystemSession session = aether.getRepositorySystemSession(system, localRepoPath);
 
         //the staging is done here in a nexus oss specific way, moving an artifact by a copy/delete pattern.
         //this is (maybe) different on other repository servers. Due to that this part should be refactored 
