@@ -35,6 +35,7 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -48,6 +49,8 @@ import org.eclipse.aether.deployment.DeployResult;
 import org.eclipse.aether.deployment.DeploymentException;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -154,65 +157,109 @@ public class ArtifactPromotionBuilder extends Builder {
     }
     
     @Override
-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+	public boolean perform(AbstractBuild build, Launcher launcher,
+			BuildListener listener) {
 
-        PrintStream logger = listener.getLogger();
-        
-        String localRepoPath = build.getWorkspace() + File.separator + this.localRepoLocation;
-        
-        if (debug) logger.println("Local repository path: [" + localRepoPath + "]");
+		PrintStream logger = listener.getLogger();
 
-        AetherInteraction aether = new AetherInteraction(logger);
-        
-        logger.println("Initialising aether");
-        RepositorySystem system = aether.getNewRepositorySystem();
-        RepositorySystemSession session = aether.getRepositorySystemSession(system, localRepoPath);
+		// do some token expansion
+		final String tkGroupId;
+		final String tkArtifactId;
+		final String tkVersion;
+		final String tkExtension;
+		final String tkStagingRepository;
+		final String tkReleaseRepository;
+		try {
+			tkGroupId = TokenMacro.expandAll(build, listener, groupId);
+			tkArtifactId = TokenMacro.expandAll(build, listener, artifactId);
+			tkVersion = TokenMacro.expandAll(build, listener, version);
+			tkExtension = TokenMacro.expandAll(build, listener, extension);
+			tkStagingRepository = TokenMacro.expandAll(build, listener,
+					stagingRepository);
+			tkReleaseRepository = TokenMacro.expandAll(build, listener,
+					releaseRepository);
+		} catch (MacroEvaluationException mee) {
+			logger.println("Could not evaluate a makro: " + mee);
+			return false;
+		} catch (IOException ioe) {
+			logger.println("Got an IOException during evaluation of a makro token: " + ioe);
+			return false;
+		} catch (InterruptedException ie) {
+			logger.println("Got an InterruptedException during avaluating a makro token: "
+					+ ie);
+			return false;
+		}
 
-        //the staging is done here in a nexus oss specific way, moving an artifact by a copy/delete pattern.
-        //this is (maybe) different on other repository servers. Due to that this part should be refactored 
-        //to make it more flexible:
-        // TODO refactor me to support different repository servers
-        
-        //pull the artifact and its pom from the staging repository 
-        logger.println("Get Artifact and corresponding POM");
-        RemoteRepository aetherStagingRepo = aether.getRepository(stagingUser, stagingPW, "noid", stagingRepository);
-        Artifact artifact;
-        Artifact artifactpom;
-        try {
-            artifact = aether.getArtifact(session, system, aetherStagingRepo, groupId, artifactId, extension, version);
-            artifactpom = aether.getArtifact(session, system, aetherStagingRepo, groupId, artifactId, POMTYPE,
-                    version);
-        } catch (ArtifactResolutionException e) {
-            logger.println("Could not resolve artifact: " + e.getMessage());
-            return false;
-        }
-       
-        if (debug) {
-            aether.traceArtifactInfo(artifact);
-            aether.traceArtifactInfo(artifactpom);
-        }
-        
-        //upload the artifact and its pom to the release repos
-        RemoteRepository aetherReleaseRepo = aether.getRepository(releaseUser, releasePW, "noid", releaseRepository);
-        DeployResult result = null;
-        try {
-            result = aether.deployArtifact(session, system, aetherReleaseRepo, artifact, artifactpom);
-        } catch (DeploymentException e) {
-            logger.println("Could not deploy artifact to " + releaseRepository + " using User " + releaseUser + ":" + e.getMessage());
-            return false;
-        }
-        
-        if (debug) {
-            aether.traceDeployResult(result);            
-        }
-        
-        // remove the artifact from the statging repository
-        // TODO This is specific for Nexus OSS and should be done in a changable/configurable way.
-        IDeleteArtifact deleter = new DeleteArtifactNexusOSS(stagingUser, stagingPW, logger, debug);
-        deleter.deleteArtifact(aetherStagingRepo, artifact);
+		String localRepoPath = build.getWorkspace() + File.separator
+				+ this.localRepoLocation;
 
-        return true;
-    }
+		if (debug)
+			logger.println("Local repository path: [" + localRepoPath + "]");
+
+		AetherInteraction aether = new AetherInteraction(logger);
+
+		if (debug) logger.println("Initialising aether");
+		RepositorySystem system = aether.getNewRepositorySystem();
+		RepositorySystemSession session = aether.getRepositorySystemSession(
+				system, localRepoPath);
+
+		// the staging is done here in a nexus oss specific way, moving an
+		// artifact by a copy/delete pattern.
+		// this is (maybe) different on other repository servers. Due to
+		// that this part should be refactored
+		// to make it more flexible:
+		// TODO refactor me to support different repository servers
+
+		// pull the artifact and its pom from the staging repository
+		logger.println("Get Artifact and corresponding POM");
+
+		RemoteRepository aetherStagingRepo = aether.getRepository(stagingUser,
+				stagingPW, "noid", tkStagingRepository);
+
+		Artifact artifact;
+		Artifact artifactpom;
+		try {
+			artifact = aether.getArtifact(session, system, aetherStagingRepo,
+					tkGroupId, tkArtifactId, tkExtension, tkVersion);
+			artifactpom = aether.getArtifact(session, system,
+					aetherStagingRepo, tkGroupId, tkArtifactId, POMTYPE, tkVersion);
+		} catch (ArtifactResolutionException e) {
+			logger.println("Could not resolve artifact: " + e.getMessage());
+			return false;
+		}
+
+		if (debug) {
+			aether.traceArtifactInfo(artifact);
+			aether.traceArtifactInfo(artifactpom);
+		}
+
+		// upload the artifact and its pom to the release repos
+		RemoteRepository aetherReleaseRepo = aether.getRepository(releaseUser,
+				releasePW, "noid", tkReleaseRepository);
+		DeployResult result = null;
+		try {
+			result = aether.deployArtifact(session, system, aetherReleaseRepo,
+					artifact, artifactpom);
+		} catch (DeploymentException e) {
+			logger.println("Could not deploy artifact to " + releaseRepository
+					+ " using User " + releaseUser + ":" + e.getMessage());
+			return false;
+		}
+
+		if (debug) {
+			aether.traceDeployResult(result);
+		}
+
+		// remove the artifact from the statging repository
+		// TODO This is specific for Nexus OSS and should be done in a
+		// changable/configurable way.
+		IDeleteArtifact deleter = new DeleteArtifactNexusOSS(stagingUser,
+				stagingPW, logger, debug);
+		deleter.deleteArtifact(aetherStagingRepo, artifact);
+
+		return true;
+
+	}
         
     @Override
     public ArtifactPromotionDescriptorImpl getDescriptor() {
@@ -270,9 +317,12 @@ public class ArtifactPromotionBuilder extends Builder {
         }        
         
         /**
-         * Checks using java.net.URI constructor if a given URL is valid.
-         * This is a poor mans solution. An alternative would be using apache commons URIValidator but
-         * don't wanna import additional lib for this.
+         * This method checks originally the URL if it is valid. 
+         * On the way to support tokens this behavior is build out.
+         * It will be reactivated after a general refactoring for better
+         * token macro support.
+         * 
+         * TODO implment a URL validation which works with token macro plugin
          * 
          * @param value
          * @return
@@ -280,12 +330,6 @@ public class ArtifactPromotionBuilder extends Builder {
         private FormValidation checkURI(String value) {
             if (value.length() == 0) {
                 return FormValidation.error("Please set an URL for the staging repository!");
-            } else {
-                try {
-                    new URI(value);
-                } catch (URISyntaxException e) {
-                    return FormValidation.error("The URI is malformed. Please consult RFC2396 for a correct URI.");
-                }
             }
             return FormValidation.ok();
         }        
