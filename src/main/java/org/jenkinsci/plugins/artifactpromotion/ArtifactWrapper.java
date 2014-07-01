@@ -23,23 +23,22 @@
 package org.jenkinsci.plugins.artifactpromotion;
 
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.repository.RemoteRepository;
 
-public interface IDeleteArtifact {
+public class ArtifactWrapper {
 
-    /**
-     * This method is responsible to remove an artifact from a repository.
-     * This is needed then the repository server does not support any 
-     * metadata to label artifacts depending on their stage and the artifact has 
-     * to be moved by a copy/delete pattern. 
-     * This method should delete the corresponding pom file, too.
-     * 
-     * @param stagingRepo - The staging repository.
-     * @param artifact - The artifact with all needed informations.
-     * @param logger - The jenkins logger, currently a simple output stream.
-     * @throws IllegalStateException Thrown then something goes wrong.
-     */
-    public abstract void deleteArtifact(RemoteRepository stagingRepo, Artifact artifact)
-            throws IllegalStateException;
-
+	private Artifact artifact = null;
+	private Artifact pom = null;
+	
+	public ArtifactWrapper(Artifact artifact, Artifact pom) {
+		this.artifact = artifact;
+		this.pom = pom;
+	}
+	
+	public Artifact getArtifact() {
+		return artifact;
+	}
+	
+	public Artifact getPom() {
+		return pom;
+	}
 }

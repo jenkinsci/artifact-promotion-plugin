@@ -1,6 +1,6 @@
 /**
  * The MIT License
- * Copyright (c) 2014 Halil-Cem Guersoy
+ * Copyright (c) 2014 Halil-Cem Guersoy and all contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,6 @@ import com.sun.jersey.core.util.Base64;
  */
 public class DeleteArtifactNexusOSS implements IDeleteArtifact {
 
-    
     /**
      * The URL path delimiter.
      */
