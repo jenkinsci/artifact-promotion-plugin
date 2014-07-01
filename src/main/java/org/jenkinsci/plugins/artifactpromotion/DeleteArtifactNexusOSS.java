@@ -22,7 +22,6 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
-import hudson.Extension;
 import hudson.util.Secret;
 
 import java.io.PrintStream;

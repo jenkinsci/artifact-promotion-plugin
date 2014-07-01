@@ -53,10 +53,6 @@ import org.kohsuke.stapler.StaplerRequest;
  * In this class we encapsulate the process of moving an artifact from one
  * repository into another one.
  * 
- * 
- * TODO make me more flexible to so support different repository servers, at
- * least nexus pro, artifactory and archiva.
- * 
  * @author Halil-Cem Guersoy (hcguersoy@gmail.com)
  * 
  */
@@ -202,6 +198,7 @@ public class ArtifactPromotionBuilder extends Builder {
 			logger.println("Local repository path: [" + localRepoPath + "]");
 		}
 
+		// TODO we should put this step into a closure to make this plugin works on slaves
 		try {
 			artifactPromoter.promote();
 		} catch (PromotionException e) {
