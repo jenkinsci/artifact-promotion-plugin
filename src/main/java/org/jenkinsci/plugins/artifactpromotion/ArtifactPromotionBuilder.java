@@ -31,6 +31,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
+import hudson.util.ListBoxModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,15 +39,10 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.deployment.DeployResult;
-import org.eclipse.aether.deployment.DeploymentException;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -69,7 +65,7 @@ public class ArtifactPromotionBuilder extends Builder {
 	/**
 	 * The POM extension.
 	 */
-	private static final String POMTYPE = "pom";
+	public static final String POMTYPE = "pom";
 
 	private final String groupId;
 	private final String artifactId;
@@ -83,8 +79,14 @@ public class ArtifactPromotionBuilder extends Builder {
 	private final String localRepoLocation = "target" + File.separator
 			+ "local-repo";
 
-	// Fields for UI
 
+	/**
+	 * Promoter for staging
+	 */
+	private final AbstractPromotor artifactPromoter;
+
+	
+	// Fields for UI
 	/**
 	 * The repository there the artifact is. In a normal case a staging
 	 * repository.
@@ -153,7 +155,8 @@ public class ArtifactPromotionBuilder extends Builder {
 	public ArtifactPromotionBuilder(String groupId, String artifactId,
 			String version, String extension, String stagingRepository,
 			String stagingUser, Secret stagingPW, String releaseUser,
-			Secret releasePW, String releaseRepository, boolean debug) {
+			Secret releasePW, String releaseRepository, String promoterClass,
+			boolean debug) {
 		this.groupId = groupId;
 		this.artifactId = artifactId;
 		this.version = version;
@@ -165,64 +168,47 @@ public class ArtifactPromotionBuilder extends Builder {
 		this.releasePW = releasePW;
 		this.releaseRepository = releaseRepository;
 		this.debug = debug;
+		try {
+			this.artifactPromoter = (AbstractPromotor) Jenkins.getInstance()
+					.getExtensionList(promoterClass).iterator().next();
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) {
 
+		artifactPromoter.setListener(listener);
+	
 		PrintStream logger = listener.getLogger();
 		Map<PromotionBuildTokens, String> expandedTokens = expandTokens(build,
 				listener);
 		if (expandedTokens == null) {
 			return false;
 		}
-
+		artifactPromoter.setExpandedTokens(expandedTokens);
+		artifactPromoter.setReleasePassword(releasePW);
+		artifactPromoter.setReleaseUser(releaseUser);
+		artifactPromoter.setStagingPassword(stagingPW);
+		artifactPromoter.setStagingUser(stagingUser);
+		
 		String localRepoPath = build.getWorkspace() + File.separator
 				+ this.localRepoLocation;
+		artifactPromoter.setLocalRepositoryURL(localRepoPath);
 
 		if (debug) {
 			logger.println("Local repository path: [" + localRepoPath + "]");
 		}
 
-		AetherInteraction aether = new AetherInteraction(logger);
-
-		if (debug) {
-			logger.println("Initialising aether");
-		}
-
-		RepositorySystem system = aether.getNewRepositorySystem();
-		RepositorySystemSession session = aether.getRepositorySystemSession(
-				system, localRepoPath);
-
-		// the staging is done here in a nexus oss specific way, moving an
-		// artifact by a copy/delete pattern.
-		// this is (maybe) different on other repository servers. Due to
-		// that this part should be refactored
-		// to make it more flexible:
-		// TODO refactor me to support different repository servers
-
-		RemoteRepository aetherStagingRepo = getStagingRepository(aether,
-				expandedTokens.get(PromotionBuildTokens.STAGING_REPOSITORY));
-
-		// pull the artifact and its pom from the staging repository
-		ArtifactWrapper artifact = getArtifact(aether, system, session,
-				aetherStagingRepo, expandedTokens, logger);
-		if (artifact == null) {
+		try {
+			artifactPromoter.promote();
+		} catch (PromotionException e) {
+			logger.println(e.getMessage());
 			return false;
+			
 		}
-
-		// upload the artifact and its pom to the release repos
-		DeployResult result = deployPromotionArtifact(aether, system, session,
-				expandedTokens.get(PromotionBuildTokens.RELEASE_REPOSITORY),
-				artifact, logger);
-
-		if (result == null) {
-			return false;
-		}
-
-		// remove the artifact from the staging repository
-		deleteArtifact(aetherStagingRepo, artifact, logger);
 		return true;
 	}
 
@@ -268,86 +254,6 @@ public class ArtifactPromotionBuilder extends Builder {
 		return tokens;
 	}
 
-	private RemoteRepository getStagingRepository(AetherInteraction aether,
-			String stagingRepositoryURL) {
-		return getRepository(aether, stagingUser, stagingPW, "noid",
-				stagingRepositoryURL);
-	}
-
-	private RemoteRepository getReleaseRepository(AetherInteraction aether,
-			String releaseRepositoryURL) {
-		return getRepository(aether, releaseUser, releasePW, "noid",
-				releaseRepositoryURL);
-	}
-
-	private RemoteRepository getRepository(AetherInteraction aether,
-			String user, Secret password, String repositoryId,
-			String repositoryURL) {
-		return aether
-				.getRepository(user, password, repositoryId, repositoryURL);
-	}
-
-	private ArtifactWrapper getArtifact(AetherInteraction aether,
-			RepositorySystem system, RepositorySystemSession session,
-			RemoteRepository stagingRepo,
-			Map<PromotionBuildTokens, String> expandedTokens, PrintStream logger) {
-		logger.println("Get Artifact and corresponding POM");
-		Artifact artifact = null;
-		Artifact pom = null;
-		try {
-			artifact = aether.getArtifact(session, system, stagingRepo,
-					expandedTokens.get(PromotionBuildTokens.GROUP_ID),
-					expandedTokens.get(PromotionBuildTokens.ARTIFACT_ID),
-					expandedTokens.get(PromotionBuildTokens.EXTENSION),
-					expandedTokens.get(PromotionBuildTokens.VERSION));
-			pom = aether.getArtifact(session, system, stagingRepo,
-					expandedTokens.get(PromotionBuildTokens.GROUP_ID),
-					expandedTokens.get(PromotionBuildTokens.ARTIFACT_ID),
-					POMTYPE, expandedTokens.get(PromotionBuildTokens.VERSION));
-		} catch (ArtifactResolutionException e) {
-			logger.println("Could not resolve artifact: " + e.getMessage());
-			return null;
-		}
-		if (debug) {
-			aether.traceArtifactInfo(artifact);
-			aether.traceArtifactInfo(pom);
-		}
-		return new ArtifactWrapper(artifact, pom);
-	}
-
-	private DeployResult deployPromotionArtifact(AetherInteraction aether,
-			RepositorySystem system, RepositorySystemSession session,
-			String releaseRepositoryULR, ArtifactWrapper artifact,
-			PrintStream logger) {
-
-		RemoteRepository aetherReleaseRepo = getReleaseRepository(aether,
-				releaseRepositoryULR);
-
-		DeployResult result = null;
-		try {
-			result = aether.deployArtifact(session, system, aetherReleaseRepo,
-					artifact.getArtifact(), artifact.getPom());
-		} catch (DeploymentException e) {
-			logger.println("Could not deploy artifact to " + releaseRepository
-					+ " using User " + releaseUser + ":" + e.getMessage());
-			return null;
-		}
-		if (debug) {
-			aether.traceDeployResult(result);
-		}
-		return result;
-	}
-
-	/**
-	 * TODO This is specific for Nexus OSS and should be done in a
-	 * changable/configurable way.
-	 */
-	private void deleteArtifact(RemoteRepository aetherStagingRepo,
-			ArtifactWrapper artifact, PrintStream logger) {
-		IDeleteArtifact deleter = new DeleteArtifactNexusOSS(stagingUser,
-				stagingPW, logger, debug);
-		deleter.deleteArtifact(aetherStagingRepo, artifact.getArtifact());
-	}
 
 	@Override
 	public ArtifactPromotionDescriptorImpl getDescriptor() {
@@ -450,6 +356,22 @@ public class ArtifactPromotionBuilder extends Builder {
 			// like setUseFrench)
 			// save();
 			return super.configure(req, formData);
+		}
+
+		/**
+		 * Generates LisBoxModel for available Repository systems
+		 * 
+		 * @return available Promoters as ListBoxModel
+		 */
+		public ListBoxModel doFillPromoterClassItems() {
+			ListBoxModel promoterModel = new ListBoxModel();
+			for (Promotor promotor : Jenkins.getInstance()
+					.getExtensionList(Promotor.class)) {
+				promoterModel.add(promotor.getDescriptor().getDisplayName(), promotor
+						.getClass().getCanonicalName());
+			}
+
+			return promoterModel;
 		}
 	}
 
