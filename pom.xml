@@ -1,7 +1,7 @@
 <!--
 
     The MIT License
-    Copyright (c) 2014 Halil-Cem Guersoy
+    Copyright (c) 2014 Halil-Cem Guersoy and all contributors
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
-    <version>0.2.9-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <inceptionYear>2014</inceptionYear>
     <licenses>
@@ -60,6 +60,15 @@
             <url>https://twitter.com/hgutwit</url>
         </developer>
     </developers>
+	<contributors>
+	  <contributor>
+	    <name>Timo "timii" Paananen</name>
+	    <url>https://github.com/Timizki</url>
+	    <roles>
+	      <role>developer</role>
+	    </roles>
+	  </contributor>
+	</contributors>    
 
     <properties>
         <aetherVersion>1.0.0.v20140518</aetherVersion>
@@ -151,7 +160,7 @@
                 <configuration>
                     <header>com/mycila/maven/plugin/license/templates/MIT.txt</header>
                     <properties>
-                        <owner>Halil-Cem Guersoy</owner>
+                        <owner>Halil-Cem Guersoy and all contributors</owner>
                         <email>hcguersoy@gmail.com</email>
                     </properties>
                     <excludes>
