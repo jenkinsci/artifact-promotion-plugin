@@ -31,7 +31,7 @@
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.1</version>
     <packaging>hpi</packaging>
     <inceptionYear>2014</inceptionYear>
     <licenses>
@@ -178,7 +178,13 @@
                     </execution>
                 </executions>
             </plugin>
-
+			<plugin>
+			  <groupId>org.jenkins-ci.tools</groupId>
+			  <artifactId>maven-hpi-plugin</artifactId>
+			  <configuration>
+			     <compatibleSinceVersion>0.3.0</compatibleSinceVersion>
+			  </configuration>
+			</plugin>
         </plugins>
     </build>
 
