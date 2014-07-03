@@ -200,11 +200,10 @@ public class ArtifactPromotionBuilder extends Builder {
 
 		// TODO we should put this step into a closure to make this plugin works on slaves
 		try {
-			artifactPromoter.promote();
+			artifactPromoter.callPromotor(launcher.getChannel());
 		} catch (PromotionException e) {
 			logger.println(e.getMessage());
 			return false;
-			
 		}
 		return true;
 	}
@@ -410,6 +409,10 @@ public class ArtifactPromotionBuilder extends Builder {
 
 	public String getReleaseRepository() {
 		return releaseRepository;
+	}
+	
+	public boolean isDebug() {
+		return debug;
 	}
 
 	@Override

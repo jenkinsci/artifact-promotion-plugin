@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.artifactpromotion;
 import hudson.util.Secret;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -44,9 +45,11 @@ import com.sun.jersey.core.util.Base64;
  * @author Halil-Cem Guersoy
  *
  */
-public class DeleteArtifactNexusOSS implements IDeleteArtifact {
+public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
 
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * The URL path delimiter.
      */
     private static final String DELI = "/";
@@ -54,9 +57,7 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact {
     /**
      * Nexus returns status code 204 then deleted successful via REsT API.
      */
-    private static final int NEXUS_DELETE_SUCESS = 204;   
-    
-    private PrintStream logger; 
+    private static final int NEXUS_DELETE_SUCESS = 204;    
     
     private boolean debug;
     
@@ -69,9 +70,8 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact {
      * 
      * @param logger A simple PrintStream, obtained from Jenkins.
      */
-    public DeleteArtifactNexusOSS(final String user, final Secret password, final PrintStream logger, final boolean debug) {
+    public DeleteArtifactNexusOSS(final String user, final Secret password, final boolean debug) {
         super();
-        this.logger = logger;
         this.debug = debug;
         this.user = user;
         this.password = password;
@@ -89,7 +89,7 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact {
         String requestURL = stagingRepo.getUrl() + artifact.getGroupId().replace(".", DELI) + DELI
                 + artifact.getArtifactId() + DELI + artifact.getVersion() + DELI;
         
-        if (debug) logger.println("Request URL is: [" + requestURL + "]");
+        if (debug) System.out.println("Request URL is: [" + requestURL + "]");
 
         //TODO needs rework for anonymous access
         String auth = new String(Base64.encode(this.user + ":" + Secret.toString(this.password)));
@@ -101,14 +101,14 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact {
 
         int statusCode = response.getStatus();
 
-        if (debug) logger.println("Status code is: " + statusCode);
+        if (debug) System.out.println("Status code is: " + statusCode);
 
         if (statusCode == 401) {
             throw new IllegalStateException("Invalid Username or Password while accessing target repository.");
         } else if (statusCode != NEXUS_DELETE_SUCESS) {
             throw new IllegalStateException("The artifact is not deleted - status code is: " + statusCode);
         }
-        logger.println("Successfully deleted artifact " + artifact.getArtifactId() + " from repository " + stagingRepo.getUrl());
+        System.out.println("Successfully deleted artifact " + artifact.getArtifactId() + " from repository " + stagingRepo.getUrl());
         
     }
  

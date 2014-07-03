@@ -57,12 +57,12 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
  */
 public class AetherInteraction {
         
-    private final PrintStream logger;
+//    private final PrintStream System.out;
     
    
-    public AetherInteraction(PrintStream logger) {
+    public AetherInteraction() {
         super();
-        this.logger = logger;
+//        this.System.out = System.out;
     }
 
     /**
@@ -114,7 +114,7 @@ public class AetherInteraction {
     }
 
     public RepositorySystem getNewRepositorySystem() {
-        return RepositorySystemFactory.getNewRepositorySystem(this.logger);
+        return RepositorySystemFactory.getNewRepositorySystem(System.out);
     }
 
     public DefaultRepositorySystemSession getRepositorySystemSession(final RepositorySystem system, final String localRepoLocation) {
@@ -122,7 +122,7 @@ public class AetherInteraction {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
         LocalRepository localRepo = new LocalRepository(localRepoLocation);
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
-        session.setTransferListener(new JenkinsConsoleTransferListener(logger));
+        session.setTransferListener(new JenkinsConsoleTransferListener(System.out));
         return session;
     }
 
@@ -139,12 +139,26 @@ public class AetherInteraction {
     protected RemoteRepository getRepository(final String user, final Secret password, final String repoId,
             final String repoURL) {
         
-        
+    	//DEBUG
+    	//FIXME delete me
+    	System.err.println("Entered getRepository");
+        if (user == null || password == null || repoId == null || repoURL == null) {
+        	System.err.println("user [" + user + "]");
+        	System.err.println("password [" + password + "]");
+        	System.err.println("repoId [" + repoId + "]");
+        	System.err.println("repoURL [" + repoURL + "]");
+        }
+    	
         if (user == null || password == null || repoId == null || repoURL == null) 
             throw new IllegalArgumentException("You cant provide null objects here.");
         
         RemoteRepository.Builder builder = new RemoteRepository.Builder(repoId, "default",
                 repoURL);
+        
+        //debug
+        if (builder == null) {
+        	System.err.println("BUILDER IS NULL");
+        }
         
         if (user.length() > 0 || Secret.toString(password).length() > 0 ) {
             Authentication authentication = new AuthenticationBuilder().addUsername(user)
@@ -157,23 +171,23 @@ public class AetherInteraction {
     }
 
     protected void traceArtifactInfo(Artifact artifact) {
-        logger.println("-------------- artifact info");
-        logger.println(artifact + " resolved to  " + artifact.getFile());
-        logger.println("File :" + artifact.getFile());
-        logger.println("Properties:");
+        System.out.println("-------------- artifact info");
+        System.out.println(artifact + " resolved to  " + artifact.getFile());
+        System.out.println("File :" + artifact.getFile());
+        System.out.println("Properties:");
         Map<String, String> props = artifact.getProperties();
         for (String key : props.keySet()) {
-            logger.println("Key:" + key + " Value: " + props.get(key));
+            System.out.println("Key:" + key + " Value: " + props.get(key));
         }
-        logger.println("Base-Version:" + artifact.getBaseVersion());
-        logger.println("Version: " + artifact.getVersion());
-        logger.println("Classifier: " + artifact.getClassifier());
-        logger.println("Extension: " + artifact.getExtension());
+        System.out.println("Base-Version:" + artifact.getBaseVersion());
+        System.out.println("Version: " + artifact.getVersion());
+        System.out.println("Classifier: " + artifact.getClassifier());
+        System.out.println("Extension: " + artifact.getExtension());
     }
 
     protected void traceDeployResult(DeployResult result) {
-        logger.println("-------------- Deploy result info");
-        logger.println(result.getRequest().getTrace());
+        System.out.println("-------------- Deploy result info");
+        System.out.println(result.getRequest().getTrace());
         Collection<Metadata> allMetadata = result.getMetadata();
         traceMetadata(allMetadata);
     }
@@ -181,11 +195,11 @@ public class AetherInteraction {
     protected void traceMetadata(Collection<Metadata> allMetadata) {
         for (Metadata metadata : allMetadata) {
 
-            logger.println("ArtifactID : " + metadata.getArtifactId());
-            logger.println("GroupID : " + metadata.getGroupId());
-            logger.println("Typ : " + metadata.getType());
-            logger.println("Version : " + metadata.getVersion());
-            logger.println("Nature : " + metadata.getNature());
+            System.out.println("ArtifactID : " + metadata.getArtifactId());
+            System.out.println("GroupID : " + metadata.getGroupId());
+            System.out.println("Typ : " + metadata.getType());
+            System.out.println("Version : " + metadata.getVersion());
+            System.out.println("Nature : " + metadata.getNature());
             Map<String, String> props = metadata.getProperties();
             for (String key : props.keySet()) {
                 System.out.println("Key:" + key + " Value: " + props.get(key));

@@ -32,7 +32,6 @@ import java.util.Map;
 import jenkins.model.Jenkins;
 
 import org.apache.tools.ant.ExtensionPoint;
-import org.eclipse.aether.repository.RemoteRepository;
 
 /**
  * 
@@ -43,11 +42,9 @@ import org.eclipse.aether.repository.RemoteRepository;
  */
 public abstract class AbstractPromotor extends ExtensionPoint implements Promotor {
 
-	private transient BuildListener listener;
+	private BuildListener listener;
 	private Map<PromotionBuildTokens, String> expandedTokens;
 	private String localRepositoryURL;	
-	
-	private transient AetherInteraction aether;
 	
 	private String stagingUser;
 	private Secret stagingPassword;
@@ -86,28 +83,6 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	
 	public static ExtensionList<Promotor> getAllPromoters() {
 		return Jenkins.getInstance().getExtensionList(Promotor.class);
-	}
-	
-	protected RemoteRepository getStagingRepository(String stagingRepositoryURL) {
-		return getRepository(stagingUser, stagingPassword, "noid",
-				stagingRepositoryURL);
-	}
-
-	protected RemoteRepository getReleaseRepository(String releaseRepositoryURL) {
-		return getRepository(releaseUser, releasePassword, "noid",
-				releaseRepositoryURL);
-	}
-
-	private RemoteRepository getRepository(String user, Secret password, String repositoryId,
-			String repositoryURL) {
-		return getAether().getRepository(user, password, repositoryId, repositoryURL);
-	}
-
-	protected AetherInteraction getAether() {
-		if(this.aether == null) {
-			this.aether =  new AetherInteraction(getListener().getLogger());
-		}
-		return aether;
 	}
 	
 	protected String getReleaseUser() {
