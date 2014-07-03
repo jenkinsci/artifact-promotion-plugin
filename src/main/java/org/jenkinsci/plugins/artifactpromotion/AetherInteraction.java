@@ -22,9 +22,9 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import hudson.model.BuildListener;
 import hudson.util.Secret;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,13 +56,12 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
  * 
  */
 public class AetherInteraction {
+	
+	private BuildListener listener;
         
-//    private final PrintStream System.out;
-    
-   
-    public AetherInteraction() {
+    public AetherInteraction(BuildListener listener) {
         super();
-//        this.System.out = System.out;
+        this.listener = listener;
     }
 
     /**
@@ -114,7 +113,7 @@ public class AetherInteraction {
     }
 
     public RepositorySystem getNewRepositorySystem() {
-        return RepositorySystemFactory.getNewRepositorySystem(System.out);
+        return RepositorySystemFactory.getNewRepositorySystem(listener.getLogger());
     }
 
     public DefaultRepositorySystemSession getRepositorySystemSession(final RepositorySystem system, final String localRepoLocation) {
@@ -122,7 +121,7 @@ public class AetherInteraction {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
         LocalRepository localRepo = new LocalRepository(localRepoLocation);
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
-        session.setTransferListener(new JenkinsConsoleTransferListener(System.out));
+        session.setTransferListener(new JenkinsConsoleTransferListener(listener.getLogger()));
         return session;
     }
 
@@ -138,27 +137,12 @@ public class AetherInteraction {
      */
     protected RemoteRepository getRepository(final String user, final Secret password, final String repoId,
             final String repoURL) {
-        
-    	//DEBUG
-    	//FIXME delete me
-    	System.err.println("Entered getRepository");
-        if (user == null || password == null || repoId == null || repoURL == null) {
-        	System.err.println("user [" + user + "]");
-        	System.err.println("password [" + password + "]");
-        	System.err.println("repoId [" + repoId + "]");
-        	System.err.println("repoURL [" + repoURL + "]");
-        }
-    	
+            	
         if (user == null || password == null || repoId == null || repoURL == null) 
             throw new IllegalArgumentException("You cant provide null objects here.");
         
         RemoteRepository.Builder builder = new RemoteRepository.Builder(repoId, "default",
                 repoURL);
-        
-        //debug
-        if (builder == null) {
-        	System.err.println("BUILDER IS NULL");
-        }
         
         if (user.length() > 0 || Secret.toString(password).length() > 0 ) {
             Authentication authentication = new AuthenticationBuilder().addUsername(user)
@@ -171,23 +155,23 @@ public class AetherInteraction {
     }
 
     protected void traceArtifactInfo(Artifact artifact) {
-        System.out.println("-------------- artifact info");
-        System.out.println(artifact + " resolved to  " + artifact.getFile());
-        System.out.println("File :" + artifact.getFile());
-        System.out.println("Properties:");
+        this.listener.getLogger().println("-------------- artifact info");
+        this.listener.getLogger().println(artifact + " resolved to  " + artifact.getFile());
+        this.listener.getLogger().println("File :" + artifact.getFile());
+        this.listener.getLogger().println("Properties:");
         Map<String, String> props = artifact.getProperties();
         for (String key : props.keySet()) {
-            System.out.println("Key:" + key + " Value: " + props.get(key));
+            this.listener.getLogger().println("Key:" + key + " Value: " + props.get(key));
         }
-        System.out.println("Base-Version:" + artifact.getBaseVersion());
-        System.out.println("Version: " + artifact.getVersion());
-        System.out.println("Classifier: " + artifact.getClassifier());
-        System.out.println("Extension: " + artifact.getExtension());
+        this.listener.getLogger().println("Base-Version:" + artifact.getBaseVersion());
+        this.listener.getLogger().println("Version: " + artifact.getVersion());
+        this.listener.getLogger().println("Classifier: " + artifact.getClassifier());
+        this.listener.getLogger().println("Extension: " + artifact.getExtension());
     }
 
     protected void traceDeployResult(DeployResult result) {
-        System.out.println("-------------- Deploy result info");
-        System.out.println(result.getRequest().getTrace());
+        this.listener.getLogger().println("-------------- Deploy result info");
+        this.listener.getLogger().println(result.getRequest().getTrace());
         Collection<Metadata> allMetadata = result.getMetadata();
         traceMetadata(allMetadata);
     }
@@ -195,14 +179,14 @@ public class AetherInteraction {
     protected void traceMetadata(Collection<Metadata> allMetadata) {
         for (Metadata metadata : allMetadata) {
 
-            System.out.println("ArtifactID : " + metadata.getArtifactId());
-            System.out.println("GroupID : " + metadata.getGroupId());
-            System.out.println("Typ : " + metadata.getType());
-            System.out.println("Version : " + metadata.getVersion());
-            System.out.println("Nature : " + metadata.getNature());
+            this.listener.getLogger().println("ArtifactID : " + metadata.getArtifactId());
+            this.listener.getLogger().println("GroupID : " + metadata.getGroupId());
+            this.listener.getLogger().println("Typ : " + metadata.getType());
+            this.listener.getLogger().println("Version : " + metadata.getVersion());
+            this.listener.getLogger().println("Nature : " + metadata.getNature());
             Map<String, String> props = metadata.getProperties();
             for (String key : props.keySet()) {
-                System.out.println("Key:" + key + " Value: " + props.get(key));
+                this.listener.getLogger().println("Key:" + key + " Value: " + props.get(key));
             }
         }
     }

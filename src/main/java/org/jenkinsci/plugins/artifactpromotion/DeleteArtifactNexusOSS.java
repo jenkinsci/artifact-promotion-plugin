@@ -22,9 +22,9 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import hudson.model.BuildListener;
 import hudson.util.Secret;
 
-import java.io.PrintStream;
 import java.io.Serializable;
 
 import org.eclipse.aether.artifact.Artifact;
@@ -65,16 +65,17 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
     
     private Secret password;
     
+    private BuildListener listener;
+    
     /**
      * The default constructor.
-     * 
-     * @param logger A simple PrintStream, obtained from Jenkins.
      */
-    public DeleteArtifactNexusOSS(final String user, final Secret password, final boolean debug) {
+    public DeleteArtifactNexusOSS(BuildListener listener, final String user, final Secret password, final boolean debug) {
         super();
         this.debug = debug;
         this.user = user;
         this.password = password;
+        this.listener = listener;
     }
 
     /** 
@@ -89,7 +90,7 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
         String requestURL = stagingRepo.getUrl() + artifact.getGroupId().replace(".", DELI) + DELI
                 + artifact.getArtifactId() + DELI + artifact.getVersion() + DELI;
         
-        if (debug) System.out.println("Request URL is: [" + requestURL + "]");
+        if (debug) listener.getLogger().println("Request URL is: [" + requestURL + "]");
 
         //TODO needs rework for anonymous access
         String auth = new String(Base64.encode(this.user + ":" + Secret.toString(this.password)));
@@ -101,14 +102,14 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
 
         int statusCode = response.getStatus();
 
-        if (debug) System.out.println("Status code is: " + statusCode);
+        if (debug) listener.getLogger().println("Status code is: " + statusCode);
 
         if (statusCode == 401) {
             throw new IllegalStateException("Invalid Username or Password while accessing target repository.");
         } else if (statusCode != NEXUS_DELETE_SUCESS) {
             throw new IllegalStateException("The artifact is not deleted - status code is: " + statusCode);
         }
-        System.out.println("Successfully deleted artifact " + artifact.getArtifactId() + " from repository " + stagingRepo.getUrl());
+        listener.getLogger().println("Successfully deleted artifact " + artifact.getArtifactId() + " from repository " + stagingRepo.getUrl());
         
     }
  

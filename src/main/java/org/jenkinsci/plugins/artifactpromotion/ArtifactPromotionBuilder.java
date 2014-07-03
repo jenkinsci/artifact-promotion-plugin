@@ -198,7 +198,6 @@ public class ArtifactPromotionBuilder extends Builder {
 			logger.println("Local repository path: [" + localRepoPath + "]");
 		}
 
-		// TODO we should put this step into a closure to make this plugin works on slaves
 		try {
 			artifactPromoter.callPromotor(launcher.getChannel());
 		} catch (PromotionException e) {

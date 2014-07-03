@@ -24,6 +24,11 @@ package org.jenkinsci.plugins.artifactpromotion;
 
 import org.eclipse.aether.artifact.Artifact;
 
+/**
+ * Wraps the information about an artifact, in this case
+ * it puts the artifact itself together with its corresponding pom.
+ *
+ */
 public class ArtifactWrapper {
 
 	private Artifact artifact = null;

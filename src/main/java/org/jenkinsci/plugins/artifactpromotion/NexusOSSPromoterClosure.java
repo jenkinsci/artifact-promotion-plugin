@@ -25,6 +25,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	private Secret releasePassword;
 	private String stagingUser;
 	private Secret stagingPassword;
+	private BuildListener listener;
 	
 	/**
 	 * @param localRepositoryURL
@@ -36,21 +37,20 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	 * @param stagingPassword
 	 */
 	public NexusOSSPromoterClosure(
-			String localRepositoryURL,
 			BuildListener listener,
+			String localRepositoryURL,
 			Map<PromotionBuildTokens, String> expandedTokens,
 			String releaseUser, Secret releasePassword,
 			String stagingUser, Secret stagingPassword) {
 		super();
-		
-		this.localRepositoryURL = localRepositoryURL;
-		
+				
 		this.expandedTokens = expandedTokens;
-		
+		this.listener = listener;
 		this.releaseUser = releaseUser;
 		this.releasePassword = releasePassword;
 		this.stagingUser = stagingUser;
 		this.stagingPassword = stagingPassword;
+		this.localRepositoryURL = localRepositoryURL;
 		
 	}
 
@@ -59,17 +59,12 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	 */
 	public void promote() throws PromotionException {
 		
+		this.listener.getLogger().println("Started with promotion");
 		
-		AetherInteraction aether = new AetherInteraction();
+		AetherInteraction aether = new AetherInteraction(this.listener);
 		RepositorySystem system = aether.getNewRepositorySystem();
 		RepositorySystemSession session = aether.getRepositorySystemSession(
 				system, localRepositoryURL);
-
-		//only debug
-		System.err.println("stagingUser [" + stagingUser + "]");
-		System.err.println("stagingPassword [" + stagingPassword + "]");
-		System.err.println("stagingRepo [" + this.expandedTokens
-				.get(PromotionBuildTokens.STAGING_REPOSITORY) + "]");
 		
 		RemoteRepository stagingRepository = 
 				aether.getRepository(stagingUser, 
@@ -100,7 +95,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 			RepositorySystem system, RepositorySystemSession session,
 			RemoteRepository stagingRepo) {
 
-		System.out.println("Get Artifact and corresponding POM");
+		this.listener.getLogger().println("Get Artifact and corresponding POM");
 		Artifact artifact = null;
 		Artifact pom = null;
 		try {
@@ -115,7 +110,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 					ArtifactPromotionBuilder.POMTYPE,
 					this.expandedTokens.get(PromotionBuildTokens.VERSION));
 		} catch (ArtifactResolutionException e) {
-			System.out.println(
+			this.listener.getLogger().println(
 					"Could not resolve artifact: " + e.getMessage());
 			return null;
 		}
@@ -136,7 +131,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 			return aether.deployArtifact(session, system, releaseRepository,
 					artifact.getArtifact(), artifact.getPom());
 		} catch (DeploymentException e) {
-			System.out.println(
+			this.listener.getLogger().println(
 					"Could not deploy artifact to " + releaseRepository
 							+ " using User " + releaseUser + ":"
 							+ e.getMessage());
@@ -146,7 +141,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 
 	private void deleteArtifact(RemoteRepository aetherStagingRepo,
 			ArtifactWrapper artifact) {
-		IDeleteArtifact deleter = new DeleteArtifactNexusOSS(this.stagingUser,
+		IDeleteArtifact deleter = new DeleteArtifactNexusOSS(this.listener, this.stagingUser,
 				this.stagingPassword, false);
 		deleter.deleteArtifact(aetherStagingRepo, artifact.getArtifact());
 	}

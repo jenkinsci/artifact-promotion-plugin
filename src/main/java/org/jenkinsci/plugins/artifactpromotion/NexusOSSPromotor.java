@@ -22,8 +22,6 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
-import java.io.IOException;
-
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.remoting.VirtualChannel;
@@ -31,6 +29,7 @@ import hudson.remoting.VirtualChannel;
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 
 /**
+ * Sonatype Nexus OSS specific {@link Promotor} implementation.
  * 
  * @author Timo "timii" Paananen
  * @author Halil-Cem Guersoy
@@ -39,11 +38,17 @@ import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 @Extension
 public class NexusOSSPromotor extends AbstractPromotor {
 
+	
+	/** This method calls the Nexus OSS promoter which is encapsulated into a 'closure' to make this 
+	 * plugin run on slaves, too. 
+	 * 
+	 * @see org.jenkinsci.plugins.artifactpromotion.Promotor#callPromotor(hudson.remoting.VirtualChannel)
+	 */
 	public void callPromotor(VirtualChannel channel) throws PromotionException {
 
 		IPromotorClosure promotor = new NexusOSSPromoterClosure(
-				getLocalRepositoryURL(), 
 				getListener(), 
+				getLocalRepositoryURL(),
 				getExpandedTokens(),
 				getReleaseUser(), 
 				getReleasePassword(), 
@@ -51,28 +56,6 @@ public class NexusOSSPromotor extends AbstractPromotor {
 				getStagingPassword());
 
 		RemotePromoter promotorTask = new RemotePromoter(promotor);
-		
-		//only debugging
-//		DebuggingObjectOutputStream out = null;
-//			try {
-//				out =
-//						new DebuggingObjectOutputStream(getListener().getLogger());
-//			  out.writeObject(promotorTask);
-//			  getListener().getLogger().println("######### promotortask serialises fine");
-//			} catch (Exception e) {
-//				getListener().getLogger().println("Serialization error. Path to bad object: " + out.getStack());
-//				e.printStackTrace(getListener().getLogger());
-//			  throw new RuntimeException(
-//			      "Serialization error. Path to bad object: " 
-//			          + out.getStack(), e);
-//			} finally {
-//				try {
-//					out.close();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace(getListener().getLogger());
-//				}
-//			}
 			
 		try {
 			channel.call(promotorTask);

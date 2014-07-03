@@ -35,7 +35,7 @@ import org.apache.tools.ant.ExtensionPoint;
 
 /**
  * 
- * TODO document me please
+ * Wraps needed informations and supply accessors to them.
  * 
  * @author Timo "timii" Paananen
  *

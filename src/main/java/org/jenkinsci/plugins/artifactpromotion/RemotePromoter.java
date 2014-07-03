@@ -4,6 +4,13 @@ import hudson.remoting.Callable;
 
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 
+/**
+ * This class represents a kind of interface to
+ * work this hudsons/jenkins remote closures.
+ * 
+ * @author guersoy
+ *
+ */
 public class RemotePromoter implements Callable<Void, PromotionException> {
 	
 	private static final long serialVersionUID = 1L;
@@ -11,15 +18,18 @@ public class RemotePromoter implements Callable<Void, PromotionException> {
 	private IPromotorClosure promotor = null;
 
 	/**
-	 * Take the specific promoter.
-	 * 
-	 * @param promotor
+	 * @param closure The specific promotor which has to be Serializable.
 	 */
-	public RemotePromoter(IPromotorClosure promotor) {
+	public RemotePromoter(IPromotorClosure closure) {
 		super();
-		this.promotor = promotor;
+		this.promotor = closure;
 	}
 
+	/** 
+	 * Execute the promotor, either on the master or on a slave.
+	 * 
+	 * @see hudson.remoting.Callable#call()
+	 */
 	public Void call() throws PromotionException {
 		this.promotor.promote();
 		//satisfy Void

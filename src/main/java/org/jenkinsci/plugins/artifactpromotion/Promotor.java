@@ -27,8 +27,20 @@ import hudson.remoting.VirtualChannel;
 
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 
+
+/**
+ * Interface which a server specific implementation has to implement to
+ * provide product specific handling of artifact promotion.  
+ *
+ */
 public interface Promotor extends Describable<Promotor> {
 	
+	/**
+	 * This method calls the 'real' promotion stuff or may it do it self. 
+	 * 
+	 * @param channel - a hudson.Channel to enable runs on slaves.
+	 * @throws PromotionException thrown then the promotion has gone wrong 
+	 */
 	public void callPromotor(VirtualChannel channel) throws PromotionException;
 	
 }
