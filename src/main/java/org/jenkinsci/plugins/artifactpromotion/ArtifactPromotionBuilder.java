@@ -77,10 +77,14 @@ public class ArtifactPromotionBuilder extends Builder {
 
 
 	/**
-	 * Promoter for staging
+	 * Promoter for staging.
 	 */
-	private final AbstractPromotor artifactPromoter;
+	private final transient AbstractPromotor artifactPromoter;
 
+	/**
+	 * Name of the promoter class.
+	 */
+	private final String promoterClass;
 	
 	// Fields for UI
 	/**
@@ -144,6 +148,8 @@ public class ArtifactPromotionBuilder extends Builder {
 	 *            Password to be used on release repo.
 	 * @param releaseRepository
 	 *            The URL of the staging repository
+	 * @param promoterClass
+	 * 			  The vendor specific class which is used for the promotion, e.g. for NexusOSS
 	 * @param debug
 	 *            Flag for debug output. Currently not used.
 	 */
@@ -164,9 +170,10 @@ public class ArtifactPromotionBuilder extends Builder {
 		this.releasePW = releasePW;
 		this.releaseRepository = releaseRepository;
 		this.debug = debug;
+		this.promoterClass = promoterClass;
 		try {
 			this.artifactPromoter = (AbstractPromotor) Jenkins.getInstance()
-					.getExtensionList(promoterClass).iterator().next();
+					.getExtensionList(this.promoterClass).iterator().next();
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
