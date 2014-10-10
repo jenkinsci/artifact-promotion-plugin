@@ -46,4 +46,37 @@ public class ArtifactWrapper {
 	public Artifact getPom() {
 		return pom;
 	}
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder("[ArtifactWrapper:artifact[");
+		if(artifact != null) {
+			builder.append("groupId:");
+			builder.append(artifact.getGroupId());
+			builder.append(" artifactId:");
+			builder.append(artifact.getArtifactId());
+			builder.append(" version:");
+			builder.append(artifact.getVersion());
+			builder.append(" extension:");
+			builder.append(artifact.getExtension());
+			builder.append("]");
+		}
+		else {
+			builder.append("null]");
+		}
+		builder.append(":pom[");
+		if(pom != null) {			
+			builder.append("groupId:");
+			builder.append(pom.getGroupId());
+			builder.append(" artifactId:");
+			builder.append(pom.getArtifactId());
+			builder.append(" version:");
+			builder.append(pom.getVersion());
+			builder.append(" extension:pom");			
+		}
+		else {
+			builder.append("pom[null]");
+		}
+		builder.append("]]");
+		return builder.toString();
+	}
 }

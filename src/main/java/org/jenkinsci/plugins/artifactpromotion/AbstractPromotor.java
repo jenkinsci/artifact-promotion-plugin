@@ -24,6 +24,7 @@ package org.jenkinsci.plugins.artifactpromotion;
 
 import hudson.ExtensionList;
 import hudson.model.BuildListener;
+import hudson.remoting.VirtualChannel;
 import hudson.util.Secret;
 
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.Map;
 import jenkins.model.Jenkins;
 
 import org.apache.tools.ant.ExtensionPoint;
+import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 
 /**
  * 
@@ -117,4 +119,32 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 		this.stagingPassword = stagingPassword;
 	}
 	
+	/**
+	 * This method calls promoter which is encapsulated into a
+	 * 'closure' to make this plugin run on slaves, too.
+	 * 
+	 * @see org.jenkinsci.plugins.artifactpromotion.Promotor#callPromotor(hudson.remoting.VirtualChannel)
+	 */
+	public void callPromotor(VirtualChannel channel) throws PromotionException {	
+
+		RemotePromoter promotorTask = new RemotePromoter(getPromotor());
+			
+		try {
+			channel.call(promotorTask);
+		} catch (Exception e) {
+			getListener().getLogger().println("Promotion could not be executed");
+			e.printStackTrace(getListener().getLogger());
+			throw new PromotionException("Promotion could not be executed: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * This method needs to create repository system specific promoter which is encapsulated into a
+	 * 'closure' to make this plugin run on slaves, too.
+	 * 
+	 * @see org.jenkinsci.plugins.artifactpromotion.Promotor#callPromotor(hudson.remoting.VirtualChannel)
+	 * 
+	 * @return IPromotorClosure
+	 */
+	protected abstract IPromotorClosure getPromotor();
 }

@@ -241,7 +241,7 @@ public class ArtifactPromotionBuilder extends Builder {
 			tokens.put(PromotionBuildTokens.RELEASE_REPOSITORY,
 					TokenMacro.expandAll(build, listener, releaseRepository));
 		} catch (MacroEvaluationException mee) {
-			logger.println("Could not evaluate a makro" + mee);
+			logger.println("Could not evaluate a macro" + mee);
 			return null;
 
 		} catch (IOException ioe) {
