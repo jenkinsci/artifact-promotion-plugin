@@ -50,6 +50,12 @@
         <f:entry title="Enable debug output" field="debug" description="Enable debug output in the job console.">
             <f:checkbox />
         </f:entry>
+        <f:entry title="Promote sources" field="sources" description="Promote sources jar also">
+            <f:checkbox />
+        </f:entry>
+        <f:entry title="Promote javadocs" field="javadoc" description="Promote javadoc jar also">
+            <f:checkbox />
+        </f:entry>
     </f:section>
     
 </j:jelly>
