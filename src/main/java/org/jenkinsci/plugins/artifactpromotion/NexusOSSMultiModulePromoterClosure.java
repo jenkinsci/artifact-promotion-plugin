@@ -13,6 +13,7 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.deployment.DeployResult;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.jenkinsci.plugins.artifactpromotion.aether.AetherInteraction;
 import org.jenkinsci.plugins.artifactpromotion.exception.ArtifactResolveException;
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 import org.jenkinsci.plugins.artifactpromotion.helper.PomHelper;
@@ -72,7 +73,6 @@ public class NexusOSSMultiModulePromoterClosure extends
 					"Unexpected exception when resolving modules!", e);
 		}
 		doPromotion(artifacts);
-
 	}
 
 	private List<ArtifactWrapper> getAllArtifactsFor(
@@ -115,10 +115,15 @@ public class NexusOSSMultiModulePromoterClosure extends
 		this.listener.getLogger().println("Get Artifact and corresponding POM");
 		Artifact artifact = null;
 		Artifact pom = null;
+		Artifact sources = null;
+		Artifact javadocs = null;
 		try {
 			pom = getPom(artifactId);
 			String packaging = pomHelper.getModulesPackaging(pom);
 			artifact = getArtifact(artifactId, packaging);
+			if(!classifiers.isEmpty()) {
+				
+			}
 
 		} catch (ArtifactResolutionException e) {
 			this.listener.getLogger().println(
@@ -146,4 +151,15 @@ public class NexusOSSMultiModulePromoterClosure extends
 			throws ArtifactResolutionException {
 		return getArtifact(artifactId, ArtifactPromotionBuilder.POMTYPE);
 	}	
+	
+	private Artifact getArtifactWithClassifier(String artifactId, ClassifierEnum classifier) throws ArtifactResolutionException {
+		return aether.getArtifact(
+				session,
+				system,
+				stagingRepository,
+				this.expandedTokens.get(PromotionBuildTokens.GROUP_ID),
+				artifactId,
+				"jar",
+				this.expandedTokens.get(PromotionBuildTokens.VERSION) + classifier.getValue());
+	}
 }

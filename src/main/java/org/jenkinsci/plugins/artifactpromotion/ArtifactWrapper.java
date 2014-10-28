@@ -22,22 +22,26 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.aether.artifact.Artifact;
 
 /**
  * Wraps the information about an artifact, in this case
- * it puts the artifact itself together with its corresponding pom.
+ * it puts the artifact itself together with its corresponding pom, sources and javadocs.
  *
  */
 public class ArtifactWrapper {
 
 	private Artifact artifact = null;
 	private Artifact pom = null;
+	private List<Artifact> classifierArtifacts  = new ArrayList<Artifact>();
 	
 	public ArtifactWrapper(Artifact artifact, Artifact pom) {
 		this.artifact = artifact;
 		this.pom = pom;
-	}
+	}	
 	
 	public Artifact getArtifact() {
 		return artifact;
@@ -46,6 +50,7 @@ public class ArtifactWrapper {
 	public Artifact getPom() {
 		return pom;
 	}
+		
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder("[ArtifactWrapper:artifact[");
@@ -78,5 +83,15 @@ public class ArtifactWrapper {
 		}
 		builder.append("]]");
 		return builder.toString();
+	}
+	
+	public List<Artifact> getClassifierArtifacts() {
+		return this.classifierArtifacts;
+	}
+	
+	public void addClassifierArtifact(Artifact artifact) {
+		if(artifact != null) {
+			this.classifierArtifacts.add(artifact);
+		}
 	}
 }

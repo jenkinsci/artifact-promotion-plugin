@@ -27,7 +27,10 @@ import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.Secret;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
@@ -53,7 +56,7 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	
 	private String releaseUser;
 	private Secret releasePassword;
-	
+	private List<ClassifierEnum> classifiers = new ArrayList<ClassifierEnum>();
 	
 	public void setLocalRepositoryURL(String localRepositoryURL) {
 		this.localRepositoryURL = localRepositoryURL;
@@ -117,6 +120,13 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	
 	public void setStagingPassword(Secret stagingPassword) {
 		this.stagingPassword = stagingPassword;
+	}
+	
+	public void setClassifiers(List<ClassifierEnum> classifiers) {
+		if(classifiers == null) {
+			this.classifiers = Collections.emptyList();
+		}
+		this.classifiers = classifiers;
 	}
 	
 	/**

@@ -36,12 +36,15 @@ import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
@@ -72,9 +75,7 @@ public class ArtifactPromotionBuilder extends Builder {
 	 * The location of the local repository system relative to the workspace. In
 	 * this repository the downloaded artifact will be saved.
 	 */
-	private final String localRepoLocation = "target" + File.separator
-			+ "local-repo";
-
+	private final String localRepoLocation = "target" + File.separator + "local-repo";
 
 	/**
 	 * Promoter for staging.
@@ -85,7 +86,7 @@ public class ArtifactPromotionBuilder extends Builder {
 	 * Name of the promoter class.
 	 */
 	private final String promoterClass;
-	
+
 	// Fields for UI
 	/**
 	 * The repository there the artifact is. In a normal case a staging
@@ -123,6 +124,9 @@ public class ArtifactPromotionBuilder extends Builder {
 	 * Flag to write more info in the job console.
 	 */
 	private final boolean debug;
+	
+	private final List<ClassifierEnum> classifiers = new ArrayList<ClassifierEnum>();
+		
 
 	/**
 	 * The default constructor. The parameters are injected by jenkins builder
@@ -149,16 +153,15 @@ public class ArtifactPromotionBuilder extends Builder {
 	 * @param releaseRepository
 	 *            The URL of the staging repository
 	 * @param promoterClass
-	 * 			  The vendor specific class which is used for the promotion, e.g. for NexusOSS
+	 *            The vendor specific class which is used for the promotion,
+	 *            e.g. for NexusOSS
 	 * @param debug
 	 *            Flag for debug output. Currently not used.
 	 */
 	@DataBoundConstructor
-	public ArtifactPromotionBuilder(String groupId, String artifactId,
-			String version, String extension, String stagingRepository,
-			String stagingUser, Secret stagingPW, String releaseUser,
-			Secret releasePW, String releaseRepository, String promoterClass,
-			boolean debug) {
+	public ArtifactPromotionBuilder(String groupId, String artifactId, String version, String extension,
+			String stagingRepository, String stagingUser, Secret stagingPW, String releaseUser, Secret releasePW,
+			String releaseRepository, String promoterClass, boolean sources, boolean javadoc, boolean debug) {
 		this.groupId = groupId;
 		this.artifactId = artifactId;
 		this.version = version;
@@ -171,34 +174,42 @@ public class ArtifactPromotionBuilder extends Builder {
 		this.releaseRepository = releaseRepository;
 		this.debug = debug;
 		this.promoterClass = promoterClass;
+		if(sources) {
+			classifiers.add(ClassifierEnum.SOURCES);
+		}
+		if(javadoc) {
+			classifiers.add(ClassifierEnum.JAVADOC);
+		}
+		
 		try {
-			this.artifactPromoter = (AbstractPromotor) Jenkins.getInstance()
-					.getExtensionList(this.promoterClass).iterator().next();
+			this.artifactPromoter = (AbstractPromotor) Jenkins.getInstance().getExtensionList(this.promoterClass)
+					.iterator().next();
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
+		
 	}
 
 	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-			BuildListener listener) {
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
 
 		artifactPromoter.setListener(listener);
-	
+		if(this.debug) {
+			listener.getLogger().println("---------------> "+ this.toString());
+		}
 		PrintStream logger = listener.getLogger();
-		Map<PromotionBuildTokens, String> expandedTokens = expandTokens(build,
-				listener);
+		Map<PromotionBuildTokens, String> expandedTokens = expandTokens(build, listener);
 		if (expandedTokens == null) {
 			return false;
 		}
+		artifactPromoter.setClassifiers(this.classifiers);
 		artifactPromoter.setExpandedTokens(expandedTokens);
 		artifactPromoter.setReleasePassword(releasePW);
 		artifactPromoter.setReleaseUser(releaseUser);
 		artifactPromoter.setStagingPassword(stagingPW);
 		artifactPromoter.setStagingUser(stagingUser);
-		
-		String localRepoPath = build.getWorkspace() + File.separator
-				+ this.localRepoLocation;
+
+		String localRepoPath = build.getWorkspace() + File.separator + this.localRepoLocation;
 		artifactPromoter.setLocalRepositoryURL(localRepoPath);
 
 		if (debug) {
@@ -223,19 +234,14 @@ public class ArtifactPromotionBuilder extends Builder {
 	 * @throws TokenExpansionException
 	 *             if token expansion fails
 	 */
-	private Map<PromotionBuildTokens, String> expandTokens(
-			AbstractBuild<?, ?> build, BuildListener listener) {
+	private Map<PromotionBuildTokens, String> expandTokens(AbstractBuild<?, ?> build, BuildListener listener) {
 		PrintStream logger = listener.getLogger();
 		Map<PromotionBuildTokens, String> tokens = new HashMap<PromotionBuildTokens, String>();
 		try {
-			tokens.put(PromotionBuildTokens.GROUP_ID,
-					TokenMacro.expandAll(build, listener, groupId));
-			tokens.put(PromotionBuildTokens.ARTIFACT_ID,
-					TokenMacro.expandAll(build, listener, artifactId));
-			tokens.put(PromotionBuildTokens.VERSION,
-					TokenMacro.expandAll(build, listener, version));
-			tokens.put(PromotionBuildTokens.EXTENSION,
-					TokenMacro.expandAll(build, listener, extension));
+			tokens.put(PromotionBuildTokens.GROUP_ID, TokenMacro.expandAll(build, listener, groupId));
+			tokens.put(PromotionBuildTokens.ARTIFACT_ID, TokenMacro.expandAll(build, listener, artifactId));
+			tokens.put(PromotionBuildTokens.VERSION, TokenMacro.expandAll(build, listener, version));
+			tokens.put(PromotionBuildTokens.EXTENSION, TokenMacro.expandAll(build, listener, extension));
 			tokens.put(PromotionBuildTokens.STAGING_REPOSITORY,
 					TokenMacro.expandAll(build, listener, stagingRepository));
 			tokens.put(PromotionBuildTokens.RELEASE_REPOSITORY,
@@ -245,17 +251,14 @@ public class ArtifactPromotionBuilder extends Builder {
 			return null;
 
 		} catch (IOException ioe) {
-			logger.println("Got an IOException during evaluation of a makro token"
-					+ ioe);
+			logger.println("Got an IOException during evaluation of a makro token" + ioe);
 			return null;
 		} catch (InterruptedException ie) {
-			logger.println("Got an InterruptedException during avaluating a makro token"
-					+ ie);
+			logger.println("Got an InterruptedException during avaluating a makro token" + ie);
 			return null;
 		}
 		return tokens;
 	}
-
 
 	@Override
 	public ArtifactPromotionDescriptorImpl getDescriptor() {
@@ -266,8 +269,7 @@ public class ArtifactPromotionBuilder extends Builder {
 	 * Descriptor for {@link ArtifactPromotionBuilder}.
 	 */
 	@Extension
-	public static final class ArtifactPromotionDescriptorImpl extends
-			BuildStepDescriptor<Builder> {
+	public static final class ArtifactPromotionDescriptorImpl extends BuildStepDescriptor<Builder> {
 
 		/**
 		 * In order to load the persisted global configuration, you have to call
@@ -301,18 +303,15 @@ public class ArtifactPromotionBuilder extends Builder {
 
 		public FormValidation doCheckVersion(@QueryParameter String value) {
 			if (value.length() == 0)
-				return FormValidation
-						.error("Please set a Version for your artifact!");
+				return FormValidation.error("Please set a Version for your artifact!");
 			return FormValidation.ok();
 		}
 
-		public FormValidation doCheckStagingRepository(
-				@QueryParameter String value) {
+		public FormValidation doCheckStagingRepository(@QueryParameter String value) {
 			return checkURI(value);
 		}
 
-		public FormValidation doCheckReleaseRepository(
-				@QueryParameter String value) {
+		public FormValidation doCheckReleaseRepository(@QueryParameter String value) {
 			return checkURI(value);
 		}
 
@@ -328,8 +327,7 @@ public class ArtifactPromotionBuilder extends Builder {
 		 */
 		private FormValidation checkURI(String value) {
 			if (value.length() == 0) {
-				return FormValidation
-						.error("Please set an URL for the staging repository!");
+				return FormValidation.error("Please set an URL for the staging repository!");
 			}
 			return FormValidation.ok();
 		}
@@ -348,8 +346,7 @@ public class ArtifactPromotionBuilder extends Builder {
 		}
 
 		@Override
-		public boolean configure(StaplerRequest req, JSONObject formData)
-				throws FormException {
+		public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
 			// To persist global configuration information,
 			// set that to properties and call save().
 			// useFrench = formData.getBoolean("useFrench");
@@ -367,10 +364,8 @@ public class ArtifactPromotionBuilder extends Builder {
 		 */
 		public ListBoxModel doFillPromoterClassItems() {
 			ListBoxModel promoterModel = new ListBoxModel();
-			for (Promotor promotor : Jenkins.getInstance()
-					.getExtensionList(Promotor.class)) {
-				promoterModel.add(promotor.getDescriptor().getDisplayName(), promotor
-						.getClass().getCanonicalName());
+			for (Promotor promotor : Jenkins.getInstance().getExtensionList(Promotor.class)) {
+				promoterModel.add(promotor.getDescriptor().getDisplayName(), promotor.getClass().getCanonicalName());
 			}
 
 			return promoterModel;
@@ -416,13 +411,23 @@ public class ArtifactPromotionBuilder extends Builder {
 	public String getReleaseRepository() {
 		return releaseRepository;
 	}
-	
+
 	public boolean isDebug() {
 		return debug;
 	}
+	
+	public boolean isJavadoc() {
+		return classifiers.contains(ClassifierEnum.JAVADOC);
+	}
+	
+	public boolean isSources() {
+		return classifiers.contains(ClassifierEnum.SOURCES);
+	}
+	
 
 	@Override
 	public String toString() {
+		
 		StringBuilder builder = new StringBuilder();
 		builder.append("ArtifactPromotionBuilder [POMTYPE=");
 		builder.append(POMTYPE);
@@ -446,7 +451,11 @@ public class ArtifactPromotionBuilder extends Builder {
 		builder.append(releaseRepository);
 		builder.append(", debug=");
 		builder.append(debug);
+		builder.append(", javadocs=");
+		builder.append(classifiers.contains(ClassifierEnum.JAVADOC));
+		builder.append(", sources=");
+		builder.append(classifiers.contains(ClassifierEnum.SOURCES));
 		builder.append("]");
-		return builder.toString();
+		return ToStringBuilder.reflectionToString(this); //builder.toString();
 	}
 }
