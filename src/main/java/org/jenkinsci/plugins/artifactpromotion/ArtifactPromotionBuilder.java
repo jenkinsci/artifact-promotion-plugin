@@ -75,12 +75,6 @@ public class ArtifactPromotionBuilder extends Builder {
 	private final String localRepoLocation = "target" + File.separator
 			+ "local-repo";
 
-
-	/**
-	 * Promoter for staging.
-	 */
-	private final transient AbstractPromotor artifactPromoter;
-
 	/**
 	 * Name of the promoter class.
 	 */
@@ -159,6 +153,7 @@ public class ArtifactPromotionBuilder extends Builder {
 			String stagingUser, Secret stagingPW, String releaseUser,
 			Secret releasePW, String releaseRepository, String promoterClass,
 			boolean debug) {
+				
 		this.groupId = groupId;
 		this.artifactId = artifactId;
 		this.version = version;
@@ -171,42 +166,60 @@ public class ArtifactPromotionBuilder extends Builder {
 		this.releaseRepository = releaseRepository;
 		this.debug = debug;
 		this.promoterClass = promoterClass;
-		try {
-			this.artifactPromoter = (AbstractPromotor) Jenkins.getInstance()
-					.getExtensionList(this.promoterClass).iterator().next();
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
 	}
-
+	
 	@Override
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) {
-
-		artifactPromoter.setListener(listener);
-	
+		
+		
 		PrintStream logger = listener.getLogger();
+		AbstractPromotor artifactPromotor = null;
+		
+		// Initialize the promoter class
+		// moved to here as the constructor of the builder is bypassed by stapler
+		try {
+			
+			if (debug) {
+				logger.println("Used promoter class: " + promoterClass);
+			}
+			
+		    artifactPromotor = (AbstractPromotor) Jenkins.getInstance()
+					.getExtensionList(this.promoterClass).iterator().next();
+			
+		} catch (ClassNotFoundException e) {
+			logger.println("ClassNotFoundException - unable to pick correct promotor class: " + e );
+			throw new RuntimeException(e);
+		}		
+
+		if (artifactPromotor == null) {
+			logger.println("artifactPromotor is null - ABORTING!");
+			return false;
+		}
+		artifactPromotor.setListener(listener);
+	
 		Map<PromotionBuildTokens, String> expandedTokens = expandTokens(build,
 				listener);
 		if (expandedTokens == null) {
+			logger.println("Could not expand tokens - ABORTING!");
 			return false;
 		}
-		artifactPromoter.setExpandedTokens(expandedTokens);
-		artifactPromoter.setReleasePassword(releasePW);
-		artifactPromoter.setReleaseUser(releaseUser);
-		artifactPromoter.setStagingPassword(stagingPW);
-		artifactPromoter.setStagingUser(stagingUser);
+		artifactPromotor.setExpandedTokens(expandedTokens);
+		artifactPromotor.setReleasePassword(releasePW);
+		artifactPromotor.setReleaseUser(releaseUser);
+		artifactPromotor.setStagingPassword(stagingPW);
+		artifactPromotor.setStagingUser(stagingUser);
 		
 		String localRepoPath = build.getWorkspace() + File.separator
 				+ this.localRepoLocation;
-		artifactPromoter.setLocalRepositoryURL(localRepoPath);
+		artifactPromotor.setLocalRepositoryURL(localRepoPath);
 
 		if (debug) {
 			logger.println("Local repository path: [" + localRepoPath + "]");
 		}
 
 		try {
-			artifactPromoter.callPromotor(launcher.getChannel());
+			artifactPromotor.callPromotor(launcher.getChannel());
 		} catch (PromotionException e) {
 			logger.println(e.getMessage());
 			return false;
@@ -274,9 +287,12 @@ public class ArtifactPromotionBuilder extends Builder {
 		 * load() in the constructor.
 		 */
 		public ArtifactPromotionDescriptorImpl() {
+			
+//			only debug - delete me
+			System.out.println("**** ArtifactPromotionDescriptorImpl ****");
 			load();
 		}
-
+		
 		// Form validation
 
 		/**
