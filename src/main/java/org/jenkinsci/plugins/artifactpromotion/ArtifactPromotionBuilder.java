@@ -286,10 +286,7 @@ public class ArtifactPromotionBuilder extends Builder {
 		 * In order to load the persisted global configuration, you have to call
 		 * load() in the constructor.
 		 */
-		public ArtifactPromotionDescriptorImpl() {
-			
-//			only debug - delete me
-			System.out.println("**** ArtifactPromotionDescriptorImpl ****");
+		public ArtifactPromotionDescriptorImpl() {			
 			load();
 		}
 		
