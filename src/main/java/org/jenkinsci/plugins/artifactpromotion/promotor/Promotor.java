@@ -20,24 +20,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.artifactpromotion;
+package org.jenkinsci.plugins.artifactpromotion.promotor;
 
-public enum PromotionBuildTokens {
+import hudson.model.Describable;
+import hudson.remoting.VirtualChannel;
 
-	GROUP_ID("groupId"),
-	ARTIFACT_ID("artifactId"),
-	VERSION("version"),
-	EXTENSION("extension"),
-	STAGING_REPOSITORY("stagingRepo"),
-	RELEASE_REPOSITORY("releseaRepo");
+import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
+
+
+/**
+ * Interface which a server specific implementation has to implement to
+ * provide product specific handling of artifact promotion.  
+ *
+ */
+public interface Promotor extends Describable<Promotor> {
 	
-	private String value;
+	/**
+	 * This method calls the 'real' promotion stuff or may it do it self. 
+	 * 
+	 * @param channel - a hudson.Channel to enable runs on slaves.
+	 * @throws PromotionException thrown then the promotion has gone wrong 
+	 */
+	public void callPromotor(VirtualChannel channel) throws PromotionException;
 	
-	public String getValue() {
-		return value;
-	}
-	
-	PromotionBuildTokens(String value) {
-		this.value = value;
-	}
 }

@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 
 
 /**
- * Helper class for extracting module names and packaging information from artifacts pom.xml
+ * Helper class for extracting module names and packaging information from artifact's pom.xml
  * 
  * @author Timo "timii" Paananen
  *

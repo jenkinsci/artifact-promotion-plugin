@@ -26,14 +26,13 @@ import hudson.model.BuildListener;
 import hudson.util.Secret;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.deployment.DeployRequest;
 import org.eclipse.aether.deployment.DeployResult;
 import org.eclipse.aether.deployment.DeploymentException;
@@ -44,14 +43,14 @@ import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
-import org.jenkinsci.plugins.artifactpromotion.ArtifactWrapper;
 import org.jenkinsci.plugins.artifactpromotion.JenkinsConsoleTransferListener;
-import org.jenkinsci.plugins.artifactpromotion.RepositorySystemFactory;
+import org.jenkinsci.plugins.artifactpromotion.Repository;
 
 /**
  * Interactions with aether.
  * 
  * @author Halil-Cem Guersoy
+ * @author Timo "timii" Paananen
  * 
  */
 public class AetherInteraction {
@@ -66,8 +65,10 @@ public class AetherInteraction {
 	}
 
 	public AetherInteraction(BuildListener listener, String localRepositoryURL) {
+		this(listener);
 		this.repositorySystem = getNewRepositorySystem();
 		this.session = createSession(localRepositoryURL);
+		
 	}
 
 	private RepositorySystemSession createSession(String localRepositoryURL) {
@@ -76,59 +77,6 @@ public class AetherInteraction {
 		session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(session, localRepository));
 		session.setTransferListener(new JenkinsConsoleTransferListener(this.listener.getLogger()));
 		return session;
-	}
-
-	private String createArtifactCoordsString(String groupId, String artifactId, String classifier, String version) {
-		StringBuilder coordsBuilder = new StringBuilder();
-		coordsBuilder.append(groupId);
-		coordsBuilder.append(":");
-		coordsBuilder.append(artifactId);
-		coordsBuilder.append(":");
-		if (classifier != null) {
-			coordsBuilder.append(classifier);
-			coordsBuilder.append(":");
-		}
-		coordsBuilder.append(version);
-		return coordsBuilder.toString();
-	}
-
-	public DeployResult deployArtifact(ArtifactWrapper artifact, RepositoryLogin repositoryLogin)
-			throws DeploymentException {
-		DeployRequest deployRequest = new DeployRequest();
-		deployRequest.setRepository(getRepository(repositoryLogin));
-
-		deployRequest.addArtifact(artifact.getArtifact());
-		deployRequest.addArtifact(artifact.getPom());
-		for (Artifact classierArtifact : artifact.getClassifierArtifacts()) {
-			deployRequest.addArtifact(classierArtifact);
-		}
-		return repositorySystem.deploy(session, deployRequest);
-	}
-
-	public ArtifactWrapper getArtifact(final String groupId, final String artifactId, final String classifier,
-			final String type, final String version, RepositoryLogin logins) throws ArtifactResolutionException {
-		ArtifactRequest artifactRequest = new ArtifactRequest();
-		artifactRequest.setRepositories(new ArrayList<RemoteRepository>(Arrays.asList(getRepository(logins))));
-
-		Artifact artifact = new DefaultArtifact(createArtifactCoordsString(groupId, artifactId, classifier, version));
-		artifactRequest.setArtifact(artifact);
-
-		ArtifactResult artifactResult = repositorySystem.resolveArtifact(session, artifactRequest);
-
-		artifact = artifactResult.getArtifact();
-		return new ArtifactWrapper(artifact, null);
-	}
-
-	private RemoteRepository getRepository(final RepositoryLogin logins) {
-		RemoteRepository.Builder repositoryBuilder = new RemoteRepository.Builder(logins.getRepositoryId(), "default",
-				logins.getRepositoryURL());
-		if (logins.getUsername() != null && logins.getPassword() != null) {
-			Authentication authentication = new AuthenticationBuilder().addUsername(logins.getUsername())
-					.addPassword(Secret.toString(logins.getPassword())).build();
-
-			repositoryBuilder = repositoryBuilder.setAuthentication(authentication);
-		}
-		return repositoryBuilder.build();
 	}
 
 	/**
@@ -142,14 +90,17 @@ public class AetherInteraction {
 	 * @return
 	 * @throws DeploymentException
 	 */
-	protected DeployResult deployArtifact(final RepositorySystemSession session, final RepositorySystem system,
-			final RemoteRepository releaseRepo, final ArtifactWrapper wrapped) throws DeploymentException {
-
+	public DeployResult deployArtifacts(Repository repository, Artifact... artifacts) throws DeploymentException {
 		DeployRequest deployRequest = new DeployRequest();
-		deployRequest.addArtifact(wrapped.getArtifact());
-		deployRequest.addArtifact(wrapped.getPom());
-		deployRequest.setRepository(releaseRepo);
-		return system.deploy(session, deployRequest);
+		deployRequest.setRepository(this.getRepository(repository));
+		for (Artifact artifact : artifacts) {
+			listener.getLogger().println(
+					"Deploying artifact " + artifact.getGroupId() + ":" + artifact.getArtifactId() + ":"
+							+ artifact.getVersion()+":"+artifact.getClassifier()+":"+artifact.getExtension());
+
+			deployRequest.addArtifact(artifact);
+		}
+		return repositorySystem.deploy(session, deployRequest);
 	}
 
 	/**
@@ -158,68 +109,94 @@ public class AetherInteraction {
 	 * server and use the local silently. This local repo will be cleaned by
 	 * 'mvn clean' as the default location is target/local-repo.
 	 * 
-	 * @param session
-	 * @param system
-	 * @param remoteRepos
 	 * @param groupId
 	 * @param artifactId
+	 * @param classfier
 	 * @param type
 	 * @param version
-	 * @return
+	 * @param repository
+	 * @return artifact
 	 * @throws ArtifactResolutionException
 	 */
-	protected Artifact getArtifact(final RepositorySystemSession session, RepositorySystem system,
-			final RemoteRepository remoteRepo, final String groupId, final String artifactId, final String type,
-			final String version) throws ArtifactResolutionException {
+	public Artifact getArtifact(final String groupId, final String artifactId, final String classifier,
+			final String type, final String version, Repository repository) throws ArtifactResolutionException {
+		ArtifactRequest jarRequest = new ArtifactRequestBuilder().createRequest()
+				.setArtifact(groupId, artifactId, classifier, type, version).setRepository(getRepository(repository)).build();
+		ArtifactResult artifactResult = repositorySystem.resolveArtifact(session, jarRequest);
 
-		Artifact artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + type + ":" + version);
-		ArtifactRequest artifactRequest = new ArtifactRequest();
-		artifactRequest.setArtifact(artifact);
-		artifactRequest.setRepositories(new ArrayList<RemoteRepository>(Arrays.asList(remoteRepo)));
-		ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
-		artifact = artifactResult.getArtifact();
-		return artifact;
-	}
-
-	public RepositorySystem getNewRepositorySystem() {
-		return RepositorySystemFactory.getNewRepositorySystem(listener.getLogger());
-	}
-
-	public DefaultRepositorySystemSession getRepositorySystemSession(final RepositorySystem system,
-			final String localRepoLocation) {
-
-		DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
-		LocalRepository localRepo = new LocalRepository(localRepoLocation);
-		session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
-		session.setTransferListener(new JenkinsConsoleTransferListener(listener.getLogger()));
-		return session;
+		return artifactResult.getArtifact();
 	}
 
 	/**
-	 * Creates a RemoteRepository object to work with. If a User or Password is
-	 * given the authentication information is set, too.
+	 * Get ('resolve') the artifact with pom, sources and javadoc from a repository server. If the artifact is
+	 * in local repository used by the plugin it will not download it from the
+	 * server and use the local silently. This local repo will be cleaned by
+	 * 'mvn clean' as the default location is target/local-repo.
 	 * 
-	 * @param user
-	 * @param password
-	 * @param repoId
-	 * @param repoURL
-	 * @return The remote repository to connect to.
+	 * @param groupId
+	 * @param artifactId
+	 * @param classfier
+	 * @param type
+	 * @param version
+	 * @param repository
+	 * @return List of artifacts
+	 * @throws ArtifactResolutionException
 	 */
-	protected RemoteRepository getRepository(final String user, final Secret password, final String repoId,
-			final String repoURL) {
+	public List<Artifact> getArtifacts(final Repository repository, final String groupId, final String artifactId,
+			final String type, final String version) throws ArtifactResolutionException {
+		RemoteRepository repo = getRepository(repository);
+		ArtifactRequest pomRequest = new ArtifactRequestBuilder().createRequest()
+				.setArtifact(groupId, artifactId, null, "pom", version).setRepository(repo).build();
+		ArtifactRequest jarRequest = new ArtifactRequestBuilder().createRequest()
+				.setArtifact(groupId, artifactId, null, type, version).setRepository(repo).build();
+		ArtifactRequest javadocRequest = new ArtifactRequestBuilder().createRequest()
+				.setArtifact(groupId, artifactId, "javadoc", type, version).setRepository(repo).build();
+		ArtifactRequest sourcesRequest = new ArtifactRequestBuilder().createRequest()
+				.setArtifact(groupId, artifactId, "sources", type, version).setRepository(repo).build();
 
-		if (user == null || password == null || repoId == null || repoURL == null)
+		List<ArtifactRequest> requests = new ArrayList<ArtifactRequest>();
+		requests.add(pomRequest);
+		requests.add(jarRequest);
+		requests.add(sourcesRequest);
+		requests.add(javadocRequest);
+
+		List<ArtifactResult> results = repositorySystem.resolveArtifacts(session, requests);
+
+		List<Artifact> artifacts = new ArrayList<Artifact>();
+		for (ArtifactResult result : results) {
+			artifacts.add(result.getArtifact());
+		}
+
+		return artifacts;
+	}
+
+	private RepositorySystem getNewRepositorySystem() {
+		return RepositorySystemFactory.getNewRepositorySystem(listener.getLogger());
+	}
+
+	private RemoteRepository getRepository(Repository repository) {
+
+		if (repository.getURL() == null) {
 			throw new IllegalArgumentException("You cant provide null objects here.");
+		}
 
-		RemoteRepository.Builder builder = new RemoteRepository.Builder(repoId, "default", repoURL);
+		RemoteRepository.Builder builder = new RemoteRepository.Builder(repository.getId(), "default",
+				repository.getURL());
 
-		if (user.length() > 0 || Secret.toString(password).length() > 0) {
-			Authentication authentication = new AuthenticationBuilder().addUsername(user)
-					.addPassword(Secret.toString(password)).build();
+		if (isAuthenticationData(repository)) {
+			Authentication authentication = new AuthenticationBuilder().addUsername(repository.getUsername())
+					.addPassword(Secret.toString(repository.getPassword())).build();
 
 			builder = builder.setAuthentication(authentication);
 		}
 
 		return builder.build();
+	}
+
+	private boolean isAuthenticationData(Repository repository) {
+		boolean usernameGiven = repository.getUsername() != null && !repository.getUsername().isEmpty();
+		boolean passwordGiven = repository.getPassword() != null 
+				&& !Secret.toString(repository.getPassword()).isEmpty();
+		return usernameGiven && passwordGiven;
 	}
 }

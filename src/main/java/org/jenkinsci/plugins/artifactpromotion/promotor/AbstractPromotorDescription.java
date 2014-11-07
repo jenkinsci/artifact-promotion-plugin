@@ -20,24 +20,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.artifactpromotion;
+package org.jenkinsci.plugins.artifactpromotion.promotor;
 
-public enum PromotionBuildTokens {
-
-	GROUP_ID("groupId"),
-	ARTIFACT_ID("artifactId"),
-	VERSION("version"),
-	EXTENSION("extension"),
-	STAGING_REPOSITORY("stagingRepo"),
-	RELEASE_REPOSITORY("releseaRepo");
-	
-	private String value;
-	
-	public String getValue() {
-		return value;
-	}
-	
-	PromotionBuildTokens(String value) {
-		this.value = value;
-	}
+public abstract class AbstractPromotorDescription extends hudson.model.Descriptor {
+	public abstract String getDisplayName();
 }

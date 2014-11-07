@@ -36,9 +36,7 @@ import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
@@ -46,6 +44,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
+import org.jenkinsci.plugins.artifactpromotion.promotor.Promotor;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -88,46 +87,14 @@ public class ArtifactPromotionBuilder extends Builder {
 	private final String promoterClass;
 
 	// Fields for UI
-	/**
-	 * The repository there the artifact is. In a normal case a staging
-	 * repository.
-	 */
-	private final String stagingRepository;
-
-	/**
-	 * The User for the staging Repository
-	 */
-	private final String stagingUser;
-
-	/**
-	 * The staging secret. We should still save the passwords using the
-	 * credentials plugin but its so bad documented :-(
-	 */
-	private final Secret stagingPW;
-
-	/**
-	 * The user for the release repo.
-	 */
-	private final String releaseUser;
-
-	/**
-	 * The release repo secret
-	 */
-	private final Secret releasePW;
-
-	/**
-	 * The repository into the artifact has to be moved.
-	 */
-	private final String releaseRepository;
 
 	/**
 	 * Flag to write more info in the job console.
 	 */
 	private final boolean debug;
-	
-	private final List<ClassifierEnum> classifiers = new ArrayList<ClassifierEnum>();
-		
 
+	private final boolean generatePom;
+	
 	/**
 	 * The default constructor. The parameters are injected by jenkins builder
 	 * and are the same as the (private) fields.
@@ -161,29 +128,22 @@ public class ArtifactPromotionBuilder extends Builder {
 	@DataBoundConstructor
 	public ArtifactPromotionBuilder(String groupId, String artifactId, String version, String extension,
 			String stagingRepository, String stagingUser, Secret stagingPW, String releaseUser, Secret releasePW,
-			String releaseRepository, String promoterClass, boolean sources, boolean javadoc, boolean debug) {
+			String releaseRepository, String promoterClass, boolean debug, boolean generatePom) {
+		
 		this.groupId = groupId;
 		this.artifactId = artifactId;
 		this.version = version;
 		this.extension = extension == null ? "jar" : extension;
-		this.stagingRepository = stagingRepository;
-		this.stagingUser = stagingUser;
-		this.stagingPW = stagingPW;
-		this.releaseUser = releaseUser;
-		this.releasePW = releasePW;
-		this.releaseRepository = releaseRepository;
+		this.generatePom = generatePom;
+
 		this.debug = debug;
 		this.promoterClass = promoterClass;
-		if(sources) {
-			classifiers.add(ClassifierEnum.SOURCES);
-		}
-		if(javadoc) {
-			classifiers.add(ClassifierEnum.JAVADOC);
-		}
-		
+			
 		try {
 			this.artifactPromoter = (AbstractPromotor) Jenkins.getInstance().getExtensionList(this.promoterClass)
 					.iterator().next();
+			this.artifactPromoter.setReleaseRepository(new Repository(releaseUser, releasePW, releaseRepository, "releaseRepository"));
+			this.artifactPromoter.setStagingRepository( new Repository(stagingUser, stagingPW, stagingRepository, "stagingRepository"));
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
@@ -202,12 +162,8 @@ public class ArtifactPromotionBuilder extends Builder {
 		if (expandedTokens == null) {
 			return false;
 		}
-		artifactPromoter.setClassifiers(this.classifiers);
-		artifactPromoter.setExpandedTokens(expandedTokens);
-		artifactPromoter.setReleasePassword(releasePW);
-		artifactPromoter.setReleaseUser(releaseUser);
-		artifactPromoter.setStagingPassword(stagingPW);
-		artifactPromoter.setStagingUser(stagingUser);
+		artifactPromoter.setExpandedTokens(expandedTokens);	
+		artifactPromoter.setGeneratePom(generatePom);
 
 		String localRepoPath = build.getWorkspace() + File.separator + this.localRepoLocation;
 		artifactPromoter.setLocalRepositoryURL(localRepoPath);
@@ -242,10 +198,6 @@ public class ArtifactPromotionBuilder extends Builder {
 			tokens.put(PromotionBuildTokens.ARTIFACT_ID, TokenMacro.expandAll(build, listener, artifactId));
 			tokens.put(PromotionBuildTokens.VERSION, TokenMacro.expandAll(build, listener, version));
 			tokens.put(PromotionBuildTokens.EXTENSION, TokenMacro.expandAll(build, listener, extension));
-			tokens.put(PromotionBuildTokens.STAGING_REPOSITORY,
-					TokenMacro.expandAll(build, listener, stagingRepository));
-			tokens.put(PromotionBuildTokens.RELEASE_REPOSITORY,
-					TokenMacro.expandAll(build, listener, releaseRepository));
 		} catch (MacroEvaluationException mee) {
 			logger.println("Could not evaluate a macro" + mee);
 			return null;
@@ -389,73 +341,35 @@ public class ArtifactPromotionBuilder extends Builder {
 	}
 
 	public String getStagingRepository() {
-		return stagingRepository;
+		return this.artifactPromoter.getStagingRepository().getURL();
 	}
 
 	public String getStagingUser() {
-		return stagingUser;
+		return this.artifactPromoter.getStagingRepository().getUsername();
 	}
 
 	public Secret getStagingPW() {
-		return stagingPW;
+		return this.artifactPromoter.getStagingRepository().getPassword();
 	}
 
 	public String getReleaseUser() {
-		return releaseUser;
+		return this.artifactPromoter.getReleaseRepository().getUsername();
 	}
 
 	public Secret getReleasePW() {
-		return releasePW;
+		return this.artifactPromoter.getReleaseRepository().getPassword();
 	}
 
 	public String getReleaseRepository() {
-		return releaseRepository;
+		return this.artifactPromoter.getReleaseRepository().getURL();
 	}
 
 	public boolean isDebug() {
 		return debug;
 	}
-	
-	public boolean isJavadoc() {
-		return classifiers.contains(ClassifierEnum.JAVADOC);
-	}
-	
-	public boolean isSources() {
-		return classifiers.contains(ClassifierEnum.SOURCES);
-	}
-	
 
 	@Override
 	public String toString() {
-		
-		StringBuilder builder = new StringBuilder();
-		builder.append("ArtifactPromotionBuilder [POMTYPE=");
-		builder.append(POMTYPE);
-		builder.append(", groupId=");
-		builder.append(groupId);
-		builder.append(", artifactId=");
-		builder.append(artifactId);
-		builder.append(", version=");
-		builder.append(version);
-		builder.append(", extension=");
-		builder.append(extension);
-		builder.append(", localRepoLocation=");
-		builder.append(localRepoLocation);
-		builder.append(", stagingRepository=");
-		builder.append(stagingRepository);
-		builder.append(", stagingUser=");
-		builder.append(stagingUser);
-		builder.append(", releaseUser=");
-		builder.append(releaseUser);
-		builder.append(", releaseRepository=");
-		builder.append(releaseRepository);
-		builder.append(", debug=");
-		builder.append(debug);
-		builder.append(", javadocs=");
-		builder.append(classifiers.contains(ClassifierEnum.JAVADOC));
-		builder.append(", sources=");
-		builder.append(classifiers.contains(ClassifierEnum.SOURCES));
-		builder.append("]");
-		return ToStringBuilder.reflectionToString(this); //builder.toString();
+		return ToStringBuilder.reflectionToString(this); 
 	}
 }

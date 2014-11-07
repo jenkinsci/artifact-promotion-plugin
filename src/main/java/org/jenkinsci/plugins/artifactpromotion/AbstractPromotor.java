@@ -25,18 +25,17 @@ package org.jenkinsci.plugins.artifactpromotion;
 import hudson.ExtensionList;
 import hudson.model.BuildListener;
 import hudson.remoting.VirtualChannel;
-import hudson.util.Secret;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import jenkins.model.Jenkins;
 
 import org.apache.tools.ant.ExtensionPoint;
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
+import org.jenkinsci.plugins.artifactpromotion.promotor.IPromotorClosure;
+import org.jenkinsci.plugins.artifactpromotion.promotor.Promotor;
+import org.jenkinsci.plugins.artifactpromotion.promotor.RemotePromoter;
 
 /**
  * 
@@ -50,13 +49,9 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	private BuildListener listener;
 	private Map<PromotionBuildTokens, String> expandedTokens;
 	private String localRepositoryURL;	
-	
-	private String stagingUser;
-	private Secret stagingPassword;
-	
-	private String releaseUser;
-	private Secret releasePassword;
-	private List<ClassifierEnum> classifiers = new ArrayList<ClassifierEnum>();
+	private Repository releaseRepository;
+	private Repository stagingRepository;
+	private boolean generatePom;
 	
 	public void setLocalRepositoryURL(String localRepositoryURL) {
 		this.localRepositoryURL = localRepositoryURL;
@@ -90,50 +85,34 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 		return Jenkins.getInstance().getExtensionList(Promotor.class);
 	}
 	
-	protected String getReleaseUser() {
-		return releaseUser;
+	public void setReleaseRepository(Repository releaseRepository) {
+		this.releaseRepository = releaseRepository;
 	}
 	
-	public void setReleaseUser(String releaseUser) {
-		this.releaseUser = releaseUser;
+	public void setStagingRepository(Repository stagingRepository) {
+		this.stagingRepository = stagingRepository;
 	}
 	
-	protected Secret getReleasePassword() {
-		return releasePassword;
+	protected Repository getReleaseRepository() {
+		return this.releaseRepository;
 	}
 	
-	public void setReleasePassword(Secret releasePassword) {
-		this.releasePassword = releasePassword;
+	protected Repository getStagingRepository() {
+		return this.stagingRepository;
 	}
 	
-	protected String getStagingUser() {
-		return stagingUser;
-	}
-
-	public void setStagingUser(String stagingUser) {
-		this.stagingUser = stagingUser;
-	}
 	
-	protected Secret getStagingPassword() {
-		return stagingPassword;
+	protected boolean getGeneratePom() {
+		return this.generatePom;
 	}
-	
-	public void setStagingPassword(Secret stagingPassword) {
-		this.stagingPassword = stagingPassword;
+	public void setGeneratePom(boolean generatePom) {
+		this.generatePom = generatePom;
 	}
-	
-	public void setClassifiers(List<ClassifierEnum> classifiers) {
-		if(classifiers == null) {
-			this.classifiers = Collections.emptyList();
-		}
-		this.classifiers = classifiers;
-	}
-	
 	/**
 	 * This method calls promoter which is encapsulated into a
 	 * 'closure' to make this plugin run on slaves, too.
 	 * 
-	 * @see org.jenkinsci.plugins.artifactpromotion.Promotor#callPromotor(hudson.remoting.VirtualChannel)
+	 * @see org.jenkinsci.plugins.artifactpromotion.promotor.Promotor#callPromotor(hudson.remoting.VirtualChannel)
 	 */
 	public void callPromotor(VirtualChannel channel) throws PromotionException {	
 
@@ -152,7 +131,7 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	 * This method needs to create repository system specific promoter which is encapsulated into a
 	 * 'closure' to make this plugin run on slaves, too.
 	 * 
-	 * @see org.jenkinsci.plugins.artifactpromotion.Promotor#callPromotor(hudson.remoting.VirtualChannel)
+	 * @see org.jenkinsci.plugins.artifactpromotion.promotor.Promotor#callPromotor(hudson.remoting.VirtualChannel)
 	 * 
 	 * @return IPromotorClosure
 	 */
