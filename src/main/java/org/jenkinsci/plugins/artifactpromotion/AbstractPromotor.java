@@ -52,6 +52,8 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	private String releaseUser;
 	private Secret releasePassword;
 	
+	private boolean skipDeletion;
+	
 	
 	public void setLocalRepositoryURL(String localRepositoryURL) {
 		this.localRepositoryURL = localRepositoryURL;
@@ -115,6 +117,14 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 	
 	public void setStagingPassword(Secret stagingPassword) {
 		this.stagingPassword = stagingPassword;
+	}
+
+	protected boolean isSkipDeletion() {
+		return skipDeletion;
+	}
+
+	public void setSkipDeletion(Boolean skipDeletion) {
+		this.skipDeletion = skipDeletion;
 	}
 	
 }

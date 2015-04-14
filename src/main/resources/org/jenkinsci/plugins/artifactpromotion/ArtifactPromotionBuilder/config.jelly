@@ -29,6 +29,10 @@
         <f:entry title="Password" field="stagingPW" description="The Password for the staging repository.">
             <f:password />
         </f:entry>
+        <f:entry title="Skip deletion" 
+                 field="skipDeletion" description="Skip artifact deletion from staging Repository.">
+            <f:checkbox />
+        </f:entry>       
     </f:section>
 
     <f:section title="Release Repository Information">

@@ -53,7 +53,8 @@ public class NexusOSSPromotor extends AbstractPromotor {
 				getReleaseUser(), 
 				getReleasePassword(), 
 				getStagingUser(),
-				getStagingPassword());
+				getStagingPassword(),
+				isSkipDeletion());
 
 		RemotePromoter promotorTask = new RemotePromoter(promotor);
 			

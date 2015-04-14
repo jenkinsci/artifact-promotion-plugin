@@ -25,7 +25,9 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	private Secret releasePassword;
 	private String stagingUser;
 	private Secret stagingPassword;
+	private boolean skipDeletion;
 	private BuildListener listener;
+	
 	
 	/**
 	 * @param localRepositoryURL
@@ -35,13 +37,15 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	 * @param releasePassword
 	 * @param stagingUser
 	 * @param stagingPassword
+	 * @param skipDeletion - if true, skip the deletion of the artifact out of the source repo
 	 */
 	public NexusOSSPromoterClosure(
 			BuildListener listener,
 			String localRepositoryURL,
 			Map<PromotionBuildTokens, String> expandedTokens,
 			String releaseUser, Secret releasePassword,
-			String stagingUser, Secret stagingPassword) {
+			String stagingUser, Secret stagingPassword,
+			boolean skipDeletion) {
 		super();
 				
 		this.expandedTokens = expandedTokens;
@@ -51,7 +55,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 		this.stagingUser = stagingUser;
 		this.stagingPassword = stagingPassword;
 		this.localRepositoryURL = localRepositoryURL;
-		
+		this.skipDeletion = skipDeletion;
 	}
 
 	/* (non-Javadoc)
@@ -87,8 +91,15 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 			throw new PromotionException(
 					"Could not deploy artifacts to release repository");
 		}
-
-		deleteArtifact(stagingRepository, artifact);
+		
+		if (skipDeletion == false) {
+			deleteArtifact(stagingRepository, artifact);
+		} else {
+			this.listener
+					.getLogger()
+					.println(
+							"Skipping deletion of artifact from source repo as requested by user");
+		}
 	}
 
 	private ArtifactWrapper getArtifact(AetherInteraction aether,

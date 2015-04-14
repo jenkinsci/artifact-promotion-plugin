@@ -119,6 +119,11 @@ public class ArtifactPromotionBuilder extends Builder {
 	private final boolean debug;
 
 	/**
+	 * If true don't delete the artifact from the source repository. 
+	 */
+	private boolean skipDeletion;
+
+	/**
 	 * The default constructor. The parameters are injected by jenkins builder
 	 * and are the same as the (private) fields.
 	 * 
@@ -152,7 +157,7 @@ public class ArtifactPromotionBuilder extends Builder {
 			String version, String extension, String stagingRepository,
 			String stagingUser, Secret stagingPW, String releaseUser,
 			Secret releasePW, String releaseRepository, String promoterClass,
-			boolean debug) {
+			boolean debug, boolean skipDeletion) {
 				
 		this.groupId = groupId;
 		this.artifactId = artifactId;
@@ -166,6 +171,7 @@ public class ArtifactPromotionBuilder extends Builder {
 		this.releaseRepository = releaseRepository;
 		this.debug = debug;
 		this.promoterClass = promoterClass;
+		this.skipDeletion = skipDeletion;
 	}
 	
 	@Override
@@ -209,6 +215,7 @@ public class ArtifactPromotionBuilder extends Builder {
 		artifactPromotor.setReleaseUser(releaseUser);
 		artifactPromotor.setStagingPassword(stagingPW);
 		artifactPromotor.setStagingUser(stagingUser);
+		artifactPromotor.setSkipDeletion(skipDeletion);
 		
 		String localRepoPath = build.getWorkspace() + File.separator
 				+ this.localRepoLocation;
@@ -433,6 +440,10 @@ public class ArtifactPromotionBuilder extends Builder {
 	public boolean isDebug() {
 		return debug;
 	}
+	
+	public boolean isSkipDeletion() {
+		return skipDeletion;
+	}
 
 	@Override
 	public String toString() {
@@ -459,6 +470,8 @@ public class ArtifactPromotionBuilder extends Builder {
 		builder.append(releaseRepository);
 		builder.append(", debug=");
 		builder.append(debug);
+		builder.append(", skipDeletion=");
+		builder.append(skipDeletion);		
 		builder.append("]");
 		return builder.toString();
 	}
