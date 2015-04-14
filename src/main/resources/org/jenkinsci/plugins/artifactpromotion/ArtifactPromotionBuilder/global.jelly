@@ -12,9 +12,11 @@
     so it should be straightforward to find them.
   -->
   <f:section title="Artifact Promotion Plugin">
+    <!-- 
     <f:entry title="Dummy" field="useDummy"
       description="Check if you are an dummy user.">
       <f:checkbox />
     </f:entry>
+    -->
   </f:section>
 </j:jelly>
