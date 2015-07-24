@@ -113,11 +113,13 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 			artifact = aether.getArtifact(session, system, stagingRepo,
 					this.expandedTokens.get(PromotionBuildTokens.GROUP_ID),
 					this.expandedTokens.get(PromotionBuildTokens.ARTIFACT_ID),
+					this.expandedTokens.get(PromotionBuildTokens.CLASSIFIER),
 					this.expandedTokens.get(PromotionBuildTokens.EXTENSION),
 					this.expandedTokens.get(PromotionBuildTokens.VERSION));
 			pom = aether.getArtifact(session, system, stagingRepo,
 					this.expandedTokens.get(PromotionBuildTokens.GROUP_ID),
 					this.expandedTokens.get(PromotionBuildTokens.ARTIFACT_ID),
+					null, // POM doesn't have a classifier
 					ArtifactPromotionBuilder.POMTYPE,
 					this.expandedTokens.get(PromotionBuildTokens.VERSION));
 		} catch (ArtifactResolutionException e) {

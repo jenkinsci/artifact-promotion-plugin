@@ -94,16 +94,17 @@ public class AetherInteraction {
      * @param remoteRepos
      * @param groupId
      * @param artifactId
+     * @param classifier
      * @param type
      * @param version
      * @return
      * @throws ArtifactResolutionException
      */
     protected Artifact getArtifact(final RepositorySystemSession session, RepositorySystem system,
-            final RemoteRepository remoteRepo, final String groupId, final String artifactId, final String type,
-            final String version) throws ArtifactResolutionException {
+            final RemoteRepository remoteRepo, final String groupId, final String artifactId, final String classifier,
+            final String type, final String version) throws ArtifactResolutionException {
 
-        Artifact artifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + type + ":" + version);
+        Artifact artifact = new DefaultArtifact(groupId, artifactId, classifier, type, version);
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);      
         artifactRequest.setRepositories(new ArrayList<RemoteRepository>(Arrays.asList(remoteRepo)));
