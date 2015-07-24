@@ -80,6 +80,7 @@
 
     <properties>
         <aetherVersion>1.0.0.v20140518</aetherVersion>
+        <commonsIoVersion>1.4</commonsIoVersion>
         <mavenVersion>3.1.0</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.9.1</jerseyVersion>
@@ -121,6 +122,12 @@
             <groupId>org.eclipse.aether</groupId>
             <artifactId>aether-transport-wagon</artifactId>
             <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commonsIoVersion}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>

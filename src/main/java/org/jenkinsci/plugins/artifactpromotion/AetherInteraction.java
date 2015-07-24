@@ -25,11 +25,15 @@ package org.jenkinsci.plugins.artifactpromotion;
 import hudson.model.BuildListener;
 import hudson.util.Secret;
 
+import java.io.File;
+import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
@@ -57,6 +61,8 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
  */
 public class AetherInteraction {
 	
+        private final static String TEMP_DIR_PREFIX = "artifactpromotion";
+
 	private BuildListener listener;
         
     public AetherInteraction(BuildListener listener) {
@@ -79,9 +85,43 @@ public class AetherInteraction {
             final RemoteRepository releaseRepo, final Artifact artifact, final Artifact pom) throws DeploymentException {
         
         DeployRequest deployRequest = new DeployRequest();
-        deployRequest.addArtifact(artifact).addArtifact(pom);
-        deployRequest.setRepository(releaseRepo);
-        return system.deploy(session, deployRequest);
+        deployRequest.addArtifact(artifact);
+
+        String tempName = null;
+        File tempDirectory = null;
+        try {
+            this.listener.getLogger().println("Checking if POM already exists in releaserepo");
+
+            File tempFile = File.createTempFile(TEMP_DIR_PREFIX, null);
+            tempName = tempFile.getCanonicalPath();
+            tempFile.delete();
+            tempDirectory = new File(tempName);
+            tempDirectory.mkdir();
+
+            DefaultRepositorySystemSession testSession = MavenRepositorySystemUtils.newSession();
+            LocalRepository tempRepo = new LocalRepository(tempDirectory);
+            testSession.setLocalRepositoryManager(system.newLocalRepositoryManager(testSession, tempRepo));
+
+            Artifact testPom = getArtifact(testSession, system, releaseRepo, pom.getGroupId(), pom.getArtifactId(), null,
+                    ArtifactPromotionBuilder.POMTYPE, pom.getVersion());
+        } catch(IOException e) {
+            this.listener.getLogger().println("Cannot create temp file, POM file will be deployed");
+            deployRequest.addArtifact(pom);
+        } catch(ArtifactResolutionException e) {
+            this.listener.getLogger().println("POM doesn't exist in release repo, it will be deployed");
+            deployRequest.addArtifact(pom);
+        } finally {
+            if (tempDirectory != null) {
+                try {
+                    FileUtils.deleteDirectory(tempDirectory);
+                } catch(IOException e) {
+                    this.listener.getLogger().println("Cannot delete temp file: " + tempName);
+                }
+            }
+
+            deployRequest.setRepository(releaseRepo);
+            return system.deploy(session, deployRequest);
+        }
     }
 
     /** Get ('resolve') the artifact from a repository server.
