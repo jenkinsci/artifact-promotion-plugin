@@ -5,6 +5,13 @@ import javaposse.jobdsl.dsl.Context;
 
 import org.jenkinsci.plugins.artifactpromotion.jobdsl.ArtifactPromotionJobDslExtension.RepositorySystem;
 
+/**
+ * Provides the DSL context to execute the artifactionPromotion closure in.
+ * The public methods of this class can be called from the closure and thus define the DSL vocabulary
+ * inside the artifactPromotion element.
+ *  
+ * @author Patrick Schlebusch
+ */
 public class ArtifactPromotionDslContext implements Context {
 	private String groupId;
 	private String artifactId;

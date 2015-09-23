@@ -50,8 +50,6 @@ job('example') {
 }
 ```
 
-*Hint:* If the first Build of the generated Job runs into a `java.lang.ClassNotFoundException: org.jenkinsci.artifactpromotion.NexusOSSPromotor` error you should go into the (generated) project configuration and save the project once.
-
 # Contributions
 Please feel free to contribute for other repository servers like
 * Nexus Pro
