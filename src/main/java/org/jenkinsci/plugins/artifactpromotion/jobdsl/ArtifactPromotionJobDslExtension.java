@@ -1,12 +1,21 @@
 package org.jenkinsci.plugins.artifactpromotion.jobdsl;
 
 import org.jenkinsci.plugins.artifactpromotion.ArtifactPromotionBuilder;
+import org.jenkinsci.plugins.artifactpromotion.NexusOSSPromotor;
 
 import hudson.Extension;
 import javaposse.jobdsl.dsl.helpers.step.StepContext;
 import javaposse.jobdsl.plugin.ContextExtensionPoint;
 import javaposse.jobdsl.plugin.DslExtensionMethod;
 
+/**
+ * This class provides the artifactionPromotion DSL extension method.
+ * 
+ * The artifactPromotion keyword can be used with a closure as a build step.
+ * The further vocabulary for the closure is defined in the {@link ArtifactPromotionDslContext}.
+ * 
+ * @author Patrick Schlebusch
+ */
 @Extension(optional = true)
 public class ArtifactPromotionJobDslExtension extends ContextExtensionPoint {
 
@@ -23,7 +32,7 @@ public class ArtifactPromotionJobDslExtension extends ContextExtensionPoint {
 	}
 	
 	public enum RepositorySystem {
-		NexusOSS("org.jenkinsci.artifactpromotion.NexusOSSPromotor");
+		NexusOSS(NexusOSSPromotor.class.getName());
 		
 		private String className;
 		
