@@ -60,16 +60,23 @@
             <url>https://twitter.com/hgutwit</url>
         </developer>
     </developers>
-	<contributors>
-	  <contributor>
-	    <name>Timo "timii" Paananen</name>
-	    <email>paananen.t@gmail.com</email>
-	    <url>https://github.com/Timizki</url>
-	    <roles>
-	      <role>developer</role>
-	    </roles>
-	  </contributor>
-	</contributors>    
+    <contributors>
+      <contributor>
+        <name>Timo "timii" Paananen</name>
+        <email>paananen.t@gmail.com</email>
+        <url>https://github.com/Timizki</url>
+        <roles>
+          <role>contributor</role>
+        </roles>
+      </contributor>
+      <contributor>
+        <name>Patrick Schlebusch</name>
+        <url>https://github.com/patrickschlebusch</url>
+        <roles>
+          <role>contributor</role>
+        </roles>
+      </contributor>      
+    </contributors>    
 
     <properties>
         <aetherVersion>1.0.0.v20140518</aetherVersion>
