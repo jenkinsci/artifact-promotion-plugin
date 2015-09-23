@@ -13,6 +13,45 @@ Some guys say this is an anti pattern like in this blog (http://www.alwaysagilec
 # Usage 
 The plugin is in development and should not be used currently for production environments as many parts are subject to change. Especially the support for multiple repository servers will change the GUI and result in some internal refactorings.
 
+## Job DSL
+The plugin adds an extension to the Job DSL plugin to allow defining Artifact Promotion build steps in Job DSL scripts. The extension can be used with the Job DSL plugin version 1.35 or higher.
+
+```
+job {
+	steps {
+	    artifactPromotion {
+	      groupId(String groupId)
+	      artifactId(String artifactId)
+	      version(String version)
+	      extension(String extension = "jar")
+	      stagingRepository(String url, String user, String password, boolean skipDeletion = false)
+	      releaseRepository(String url, String user, String password)
+	      debug(boolean debug)
+	    }
+	}
+}
+```
+
+Creates a build step to promote an artifact from a staging to a release repository.
+
+```
+job('example') {
+	steps {
+		// assumes default repo system (NexusOSS)
+	    artifactPromotion {
+	      groupId("com.example.test")
+	      artifactId("my-artifact")
+	      version("1.0.0")
+	      extension("zip")
+	      stagingRepository("http://nexus.myorg.com:8080/content/repositories/release-candidates", "foo", "s3cr3t")
+	      releaseRepository("http://nexus.myorg.com:8080/content/repositories/releases", "foo", "s3cr3t")
+	    }
+	}
+}
+```
+
+*Hint:* If the first Build of the generated Job runs into a `java.lang.ClassNotFoundException: org.jenkinsci.artifactpromotion.NexusOSSPromotor` error you should go into the (generated) project configuration and save the project once.
+
 # Contributions
 Please feel free to contribute for other repository servers like
 * Nexus Pro

@@ -60,22 +60,30 @@
             <url>https://twitter.com/hgutwit</url>
         </developer>
     </developers>
-	<contributors>
-	  <contributor>
-	    <name>Timo "timii" Paananen</name>
-	    <email>paananen.t@gmail.com</email>
-	    <url>https://github.com/Timizki</url>
-	    <roles>
-	      <role>developer</role>
-	    </roles>
-	  </contributor>
-	</contributors>    
+    <contributors>
+      <contributor>
+        <name>Timo "timii" Paananen</name>
+        <email>paananen.t@gmail.com</email>
+        <url>https://github.com/Timizki</url>
+        <roles>
+          <role>contributor</role>
+        </roles>
+      </contributor>
+      <contributor>
+        <name>Patrick Schlebusch</name>
+        <url>https://github.com/patrickschlebusch</url>
+        <roles>
+          <role>contributor</role>
+        </roles>
+      </contributor>      
+    </contributors>    
 
     <properties>
         <aetherVersion>1.0.0.v20140518</aetherVersion>
         <mavenVersion>3.1.0</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.9.1</jerseyVersion>
+        <jobdslVersion>1.35</jobdslVersion>
     </properties>
 
     <dependencies>
@@ -128,7 +136,13 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>token-macro</artifactId>
             <version>1.6</version>
-        </dependency>        
+        </dependency>
+        <dependency>
+        	<groupId>org.jenkins-ci.plugins</groupId>
+        	<artifactId>job-dsl</artifactId>
+        	<version>${jobdslVersion}</version>
+        	<optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>
