@@ -22,6 +22,7 @@ job {
 	    artifactPromotion {
 	      groupId(String groupId)
 	      artifactId(String artifactId)
+	      classifier(String classifier)
 	      version(String version)
 	      extension(String extension = "jar")
 	      stagingRepository(String url, String user, String password, boolean skipDeletion = false)
