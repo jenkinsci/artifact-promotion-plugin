@@ -15,6 +15,7 @@ import org.jenkinsci.plugins.artifactpromotion.jobdsl.ArtifactPromotionJobDslExt
 public class ArtifactPromotionDslContext implements Context {
 	private String groupId;
 	private String artifactId;
+	private String classifier;
 	private String version;
 	private String extension = "jar";
 	
@@ -42,6 +43,13 @@ public class ArtifactPromotionDslContext implements Context {
 	}
 	String getArtifactId() {
 		return artifactId;
+	}
+
+	public void classifier(String classifier) {
+		this.classifier = classifier;
+	}
+	String getClassifier() {
+		return classifier;
 	}
 
 	public void version(String version) {
