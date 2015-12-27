@@ -29,7 +29,7 @@ public class ArtifactPromotionDslContext implements Context {
 	
 	private String promoterClass = RepositorySystem.NexusOSS.getClassName();
 	private boolean debug = false;
-	private boolean skipDeletion = false;
+	private boolean skipDeletion = true;
 
 	public void groupId(String groupId) {
 		this.groupId = groupId;
@@ -67,7 +67,7 @@ public class ArtifactPromotionDslContext implements Context {
 	}
 
 	public void stagingRepository(String repository, String user, String password) {
-		this.stagingRepository(repository, user, password, false);
+		this.stagingRepository(repository, user, password, true);
 	}
 	public void stagingRepository(String repository, String user, String password, boolean skipDeletion) {
 		this.stagingRepository = repository;
