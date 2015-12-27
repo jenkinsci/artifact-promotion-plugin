@@ -10,6 +10,10 @@
             <f:textbox />
         </f:entry>
         
+        <f:entry title="Classifier" field="classifier" description="The classifier of the artifact - optional">
+            <f:textbox />
+        </f:entry>
+
         <f:entry title="Version" field="version" description="The version of the artifact">
             <f:textbox />
         </f:entry>
@@ -31,7 +35,7 @@
         </f:entry>
         <f:entry title="Skip deletion" 
                  field="skipDeletion" description="Skip artifact deletion from staging Repository.">
-            <f:checkbox />
+            <f:checkbox default="true" />
         </f:entry>       
     </f:section>
 

@@ -22,6 +22,7 @@ job {
 	    artifactPromotion {
 	      groupId(String groupId)
 	      artifactId(String artifactId)
+	      classifier(String classifier)
 	      version(String version)
 	      extension(String extension = "jar")
 	      stagingRepository(String url, String user, String password, boolean skipDeletion = false)
@@ -49,6 +50,10 @@ job('example') {
 	}
 }
 ```
+
+## Artifact deletion
+When you promote artifacts from the staging to the release repository you may want to remove the artifact from staging. If your artifact only has one associated file, the plugin works as expected.
+Although if you're using classifiers, deletion removes all files associated with the artifact. The 'Skip deletion' option reserves the files in the staging repository. Untick 'Skip deletion' only after you've promoted all the relevant files in prevous steps. Use a promotion step for each classifier.
 
 # Contributions
 Please feel free to contribute for other repository servers like

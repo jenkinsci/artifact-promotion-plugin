@@ -65,6 +65,7 @@ public class ArtifactPromotionBuilder extends Builder {
 
 	private final String groupId;
 	private final String artifactId;
+	private final String classifier;
 	private final String version;
 	private final String extension;
 
@@ -131,6 +132,8 @@ public class ArtifactPromotionBuilder extends Builder {
 	 *            The groupId of the artifact
 	 * @param artifactId
 	 *            The artifactId of the artifact.
+	 * @param classifier
+	 *            The classifier of the artifact.
 	 * @param version
 	 *            The version of the artifact.
 	 * @param extension
@@ -153,7 +156,7 @@ public class ArtifactPromotionBuilder extends Builder {
 	 *            Flag for debug output. Currently not used.
 	 */
 	@DataBoundConstructor
-	public ArtifactPromotionBuilder(String groupId, String artifactId,
+	public ArtifactPromotionBuilder(String groupId, String artifactId, String classifier,
 			String version, String extension, String stagingRepository,
 			String stagingUser, Secret stagingPW, String releaseUser,
 			Secret releasePW, String releaseRepository, String promoterClass,
@@ -161,6 +164,7 @@ public class ArtifactPromotionBuilder extends Builder {
 				
 		this.groupId = groupId;
 		this.artifactId = artifactId;
+		this.classifier = classifier;
 		this.version = version;
 		this.extension = extension == null ? "jar" : extension;
 		this.stagingRepository = stagingRepository;
@@ -252,9 +256,11 @@ public class ArtifactPromotionBuilder extends Builder {
 					TokenMacro.expandAll(build, listener, groupId));
 			tokens.put(PromotionBuildTokens.ARTIFACT_ID,
 					TokenMacro.expandAll(build, listener, artifactId));
+			tokens.put(PromotionBuildTokens.CLASSIFIER,
+					TokenMacro.expandAll(build, listener, classifier));
 			tokens.put(PromotionBuildTokens.VERSION,
 					TokenMacro.expandAll(build, listener, version));
-			tokens.put(PromotionBuildTokens.EXTENSION,
+			tokens.put(PromotionBuildTokens.EXTENSION, "".equals(extension) ? "jar" :
 					TokenMacro.expandAll(build, listener, extension));
 			tokens.put(PromotionBuildTokens.STAGING_REPOSITORY,
 					TokenMacro.expandAll(build, listener, stagingRepository));
@@ -405,6 +411,10 @@ public class ArtifactPromotionBuilder extends Builder {
 		return artifactId;
 	}
 
+	public String getClassifier() {
+		return classifier;
+	}
+
 	public String getVersion() {
 		return version;
 	}
@@ -454,6 +464,8 @@ public class ArtifactPromotionBuilder extends Builder {
 		builder.append(groupId);
 		builder.append(", artifactId=");
 		builder.append(artifactId);
+		builder.append(", classifier=");
+		builder.append(classifier);
 		builder.append(", version=");
 		builder.append(version);
 		builder.append(", extension=");
