@@ -75,7 +75,14 @@
         <roles>
           <role>contributor</role>
         </roles>
-      </contributor>      
+      </contributor>  
+      <contributor>
+        <name>Mate Farkas</name>
+        <url>https://github.com/farkasmate</url>
+        <roles>
+            <role>contributor</role>
+        </roles>
+      </contributor>    
     </contributors>    
 
     <properties>
