@@ -25,7 +25,7 @@ job {
 	      classifier(String classifier)
 	      version(String version)
 	      extension(String extension = "jar")
-	      stagingRepository(String url, String user, String password, boolean skipDeletion = false)
+	      stagingRepository(String url, String user, String password, boolean skipDeletion = true)
 	      releaseRepository(String url, String user, String password)
 	      debug(boolean debug)
 	    }
@@ -33,7 +33,7 @@ job {
 }
 ```
 
-Creates a build step to promote an artifact from a staging to a release repository.
+Creates a build step to promote an artifact from a staging to a release repository, unchecking *skipDeletion* which causes the deletion of the **whole** version with all artifacts from the staging repository (this is disabled by default). 
 
 ```
 job('example') {
@@ -44,7 +44,7 @@ job('example') {
 	      artifactId("my-artifact")
 	      version("1.0.0")
 	      extension("zip")
-	      stagingRepository("http://nexus.myorg.com:8080/content/repositories/release-candidates", "foo", "s3cr3t")
+	      stagingRepository("http://nexus.myorg.com:8080/content/repositories/release-candidates", "foo", "s3cr3t", false)
 	      releaseRepository("http://nexus.myorg.com:8080/content/repositories/releases", "foo", "s3cr3t")
 	    }
 	}
@@ -53,7 +53,12 @@ job('example') {
 
 ## Artifact deletion
 When you promote artifacts from the staging to the release repository you may want to remove the artifact from staging. If your artifact only has one associated file, the plugin works as expected.
-Although if you're using classifiers, deletion removes all files associated with the artifact. The 'Skip deletion' option reserves the files in the staging repository. Untick 'Skip deletion' only after you've promoted all the relevant files in prevous steps. Use a promotion step for each classifier.
+Although if you're using classifiers, deletion removes all files associated with the artifact. The *Skip deletion* option preserves the files in the staging repository. 
+Untick 'Skip deletion' only after you've promoted all the relevant files in prevous steps. Use a promotion step for each classifier.
+
+**ATTENTION:** Use this option very carefully!
+
+By default, the option *Skip deletion* is enabled.
 
 # Contributions
 Please feel free to contribute for other repository servers like
@@ -62,6 +67,11 @@ Please feel free to contribute for other repository servers like
 * Apache Archiva
 
 Don't hesitate to come up with your suggestions.
+
+# History
+
+* 0.3.6 - Support for Job DSL Plugin
+* 0.4.0 - Support for Maven Classifiers
 
 # Useful links
 * Plugin Wiki page: https://wiki.jenkins-ci.org/display/JENKINS/ArtifactPromotionPlugin
