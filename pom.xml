@@ -31,7 +31,7 @@
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
-    <version>0.3.8-SNAPSHOT</version>
+    <version>0.4.0</version>
     <packaging>hpi</packaging>
     <inceptionYear>2014</inceptionYear>
     <licenses>
@@ -57,7 +57,7 @@
             <id>hcguersoy</id>
             <name>Halil-Cem Gürsoy</name>
             <email>hcguersoy@gmail.com</email>
-            <url>https://twitter.com/hgutwit</url>
+            <url>https://github.com/hcguersoy</url>
         </developer>
     </developers>
     <contributors>
