@@ -8,7 +8,7 @@ In the first step, this plugin will support Sonatype Nexus OSS.
 Nexus OSS doesn't support staging repositories like Nexus Pro. And, in addition, it does't support custom metadata.
 Due to this, an artifact promotion could only be handled by moving or copying an artifact from a staging repository into a 'release' repository (... or however you want to call your stage).
 
-Some guys say this is an anti pattern like in [this blog](http://www.alwaysagileconsulting.com/pipeline-antipattern-mutable-binary-location/) but there is no chance to do it the right way with Nexus OSS.
+Some guys say this is an anti pattern like in [this blog](http://www.alwaysagileconsulting.com/articles/pipeline-antipattern-artifact-promotion/) but there is no chance to do it the right way with Nexus OSS.
 
 # Usage 
 The plugin is in development and should not be used currently for production environments as many parts are subject to change. Especially the support for multiple repository servers can change the GUI and result in some internal refactorings.
