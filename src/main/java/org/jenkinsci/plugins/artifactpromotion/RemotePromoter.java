@@ -3,6 +3,7 @@ package org.jenkinsci.plugins.artifactpromotion;
 import hudson.remoting.Callable;
 
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * This class represents a kind of interface to
@@ -35,5 +36,9 @@ public class RemotePromoter implements Callable<Void, PromotionException> {
 		//satisfy Void
 		return null;
 	}
-	
+
+	@Override
+	public void checkRoles(RoleChecker roleChecker) throws SecurityException {
+		// TODO
+	}
 }

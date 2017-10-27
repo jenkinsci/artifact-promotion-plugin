@@ -83,7 +83,7 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
      * 
      * TODO change to actual jersey version. Here it is still a old version used.
      * 
-     * @see org.jenkinsci.plugins.artifactpromotion.IDeleteArtifact#deleteArtifact(org.eclipse.aether.repository.RemoteRepository, org.eclipse.aether.artifact.Artifact, java.io.PrintStream)
+     * @see org.jenkinsci.plugins.artifactpromotion.IDeleteArtifact#deleteArtifact(org.eclipse.aether.repository.RemoteRepository, org.eclipse.aether.artifact.Artifact)
      */
     public void deleteArtifact(final RemoteRepository stagingRepo, final Artifact artifact) throws IllegalStateException {
 

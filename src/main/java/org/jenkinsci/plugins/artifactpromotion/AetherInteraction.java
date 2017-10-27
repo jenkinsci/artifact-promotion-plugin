@@ -131,7 +131,7 @@ public class AetherInteraction {
      * 
      * @param session
      * @param system
-     * @param remoteRepos
+     * @param remoteRepo
      * @param groupId
      * @param artifactId
      * @param classifier
