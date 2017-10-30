@@ -22,18 +22,16 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
-import hudson.model.BuildListener;
-import hudson.util.Secret;
-
-import java.io.Serializable;
-
-import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.repository.RemoteRepository;
-
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.Base64;
+import hudson.model.TaskListener;
+import hudson.util.Secret;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.repository.RemoteRepository;
+
+import java.io.Serializable;
 
 /**
  * This class is responsible to remove a artifact from a Nexus OSS repository.
@@ -65,12 +63,12 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
     
     private Secret password;
     
-    private BuildListener listener;
+    private TaskListener listener;
     
     /**
      * The default constructor.
      */
-    public DeleteArtifactNexusOSS(BuildListener listener, final String user, final Secret password, final boolean debug) {
+    public DeleteArtifactNexusOSS(TaskListener listener, final String user, final Secret password, final boolean debug) {
         super();
         this.debug = debug;
         this.user = user;

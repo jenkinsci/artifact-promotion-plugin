@@ -23,31 +23,33 @@
 package org.jenkinsci.plugins.artifactpromotion;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import hudson.util.Secret;
 import hudson.util.ListBoxModel;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
-
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
+import org.jenkinsci.plugins.artifactpromotion.jobdsl.ArtifactPromotionJobDslExtension;
 import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+
+import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * In this class we encapsulate the process of moving an artifact from one
@@ -56,7 +58,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Halil-Cem Guersoy (hcguersoy@gmail.com)
  * 
  */
-public class ArtifactPromotionBuilder extends Builder {
+public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep {
 
 	/**
 	 * The POM extension.
@@ -161,7 +163,7 @@ public class ArtifactPromotionBuilder extends Builder {
 			String stagingUser, Secret stagingPW, String releaseUser,
 			Secret releasePW, String releaseRepository, String promoterClass,
 			boolean debug, boolean skipDeletion) {
-				
+
 		this.groupId = groupId;
 		this.artifactId = artifactId;
 		this.classifier = classifier;
@@ -179,8 +181,8 @@ public class ArtifactPromotionBuilder extends Builder {
 	}
 	
 	@Override
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-			BuildListener listener) {
+	public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
+						@Nonnull TaskListener listener) {
 		
 		
 		PrintStream logger = listener.getLogger();
@@ -193,26 +195,27 @@ public class ArtifactPromotionBuilder extends Builder {
 			if (debug) {
 				logger.println("Used promoter class: " + promoterClass);
 			}
-			
+
+			// TODO: Use this.promoterClass
 		    artifactPromotor = (AbstractPromotor) Jenkins.getInstance()
-					.getExtensionList(this.promoterClass).iterator().next();
+					.getExtensionList(ArtifactPromotionJobDslExtension.RepositorySystem.NexusOSS.getClassName()).iterator().next();
 			
 		} catch (ClassNotFoundException e) {
 			logger.println("ClassNotFoundException - unable to pick correct promotor class: " + e );
 			throw new RuntimeException(e);
-		}		
+		}
 
 		if (artifactPromotor == null) {
 			logger.println("artifactPromotor is null - ABORTING!");
-			return false;
+			return;
 		}
 		artifactPromotor.setListener(listener);
 	
-		Map<PromotionBuildTokens, String> expandedTokens = expandTokens(build,
+		Map<PromotionBuildTokens, String> expandedTokens = expandTokens(build, workspace,
 				listener);
 		if (expandedTokens == null) {
 			logger.println("Could not expand tokens - ABORTING!");
-			return false;
+			return;
 		}
 		artifactPromotor.setExpandedTokens(expandedTokens);
 		artifactPromotor.setReleasePassword(releasePW);
@@ -221,7 +224,7 @@ public class ArtifactPromotionBuilder extends Builder {
 		artifactPromotor.setStagingUser(stagingUser);
 		artifactPromotor.setSkipDeletion(skipDeletion);
 		
-		String localRepoPath = build.getWorkspace() + File.separator
+		String localRepoPath = workspace.getRemote() + File.separator
 				+ this.localRepoLocation;
 		artifactPromotor.setLocalRepositoryURL(localRepoPath);
 
@@ -233,9 +236,7 @@ public class ArtifactPromotionBuilder extends Builder {
 			artifactPromotor.callPromotor(launcher.getChannel());
 		} catch (PromotionException e) {
 			logger.println(e.getMessage());
-			return false;
 		}
-		return true;
 	}
 
 	/**
@@ -244,28 +245,26 @@ public class ArtifactPromotionBuilder extends Builder {
 	 * @param build
 	 * @param listener
 	 * @return Map<PromotionBuildTokens, String> of expanded tokens
-	 * @throws TokenExpansionException
-	 *             if token expansion fails
 	 */
 	private Map<PromotionBuildTokens, String> expandTokens(
-			AbstractBuild<?, ?> build, BuildListener listener) {
+			Run<?, ?> build, FilePath workspace, TaskListener listener) {
 		PrintStream logger = listener.getLogger();
 		Map<PromotionBuildTokens, String> tokens = new HashMap<PromotionBuildTokens, String>();
 		try {
 			tokens.put(PromotionBuildTokens.GROUP_ID,
-					TokenMacro.expandAll(build, listener, groupId));
+					TokenMacro.expandAll(build, workspace, listener, groupId));
 			tokens.put(PromotionBuildTokens.ARTIFACT_ID,
-					TokenMacro.expandAll(build, listener, artifactId));
+					TokenMacro.expandAll(build, workspace, listener, artifactId));
 			tokens.put(PromotionBuildTokens.CLASSIFIER,
-					TokenMacro.expandAll(build, listener, classifier));
+					TokenMacro.expandAll(build, workspace, listener, classifier));
 			tokens.put(PromotionBuildTokens.VERSION,
-					TokenMacro.expandAll(build, listener, version));
+					TokenMacro.expandAll(build, workspace, listener, version));
 			tokens.put(PromotionBuildTokens.EXTENSION, "".equals(extension) ? "jar" :
-					TokenMacro.expandAll(build, listener, extension));
+					TokenMacro.expandAll(build, workspace, listener, extension));
 			tokens.put(PromotionBuildTokens.STAGING_REPOSITORY,
-					TokenMacro.expandAll(build, listener, stagingRepository));
+					TokenMacro.expandAll(build, workspace, listener, stagingRepository));
 			tokens.put(PromotionBuildTokens.RELEASE_REPOSITORY,
-					TokenMacro.expandAll(build, listener, releaseRepository));
+					TokenMacro.expandAll(build, workspace, listener, releaseRepository));
 		} catch (MacroEvaluationException mee) {
 			logger.println("Could not evaluate a makro" + mee);
 			return null;

@@ -1,11 +1,7 @@
 package org.jenkinsci.plugins.artifactpromotion;
 
-import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import hudson.util.Secret;
-
-import java.io.Serializable;
-import java.util.Map;
-
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
@@ -14,6 +10,9 @@ import org.eclipse.aether.deployment.DeploymentException;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
+
+import java.io.Serializable;
+import java.util.Map;
 
 public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	
@@ -26,7 +25,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	private String stagingUser;
 	private Secret stagingPassword;
 	private boolean skipDeletion;
-	private BuildListener listener;
+	private TaskListener listener;
 	
 	
 	/**
@@ -40,7 +39,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
 	 * @param skipDeletion - if true, skip the deletion of the artifact out of the source repo
 	 */
 	public NexusOSSPromoterClosure(
-			BuildListener listener,
+			TaskListener listener,
 			String localRepositoryURL,
 			Map<PromotionBuildTokens, String> expandedTokens,
 			String releaseUser, Secret releasePassword,
