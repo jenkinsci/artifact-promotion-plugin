@@ -159,10 +159,10 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
 	 */
 	@DataBoundConstructor
 	public ArtifactPromotionBuilder(String groupId, String artifactId, String classifier,
-			String version, String extension, String stagingRepository,
-			String stagingUser, Secret stagingPW, String releaseUser,
-			Secret releasePW, String releaseRepository, String promoterClass,
-			boolean debug, boolean skipDeletion) {
+									String version, String extension, String stagingRepository,
+									String stagingUser, String stagingPW, String releaseUser,
+									String releasePW, String releaseRepository, String promoterClass,
+									boolean debug, boolean skipDeletion) {
 
 		this.groupId = groupId;
 		this.artifactId = artifactId;
@@ -171,9 +171,9 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
 		this.extension = extension == null ? "jar" : extension;
 		this.stagingRepository = stagingRepository;
 		this.stagingUser = stagingUser;
-		this.stagingPW = stagingPW;
+		this.stagingPW = Secret.fromString(stagingPW);
 		this.releaseUser = releaseUser;
-		this.releasePW = releasePW;
+		this.releasePW = Secret.fromString(releasePW);
 		this.releaseRepository = releaseRepository;
 		this.debug = debug;
 		this.promoterClass = promoterClass;

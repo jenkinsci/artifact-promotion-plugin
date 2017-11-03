@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.artifactpromotion.jobdsl;
 
-import hudson.util.Secret;
 import javaposse.jobdsl.dsl.Context;
 
 import org.jenkinsci.plugins.artifactpromotion.jobdsl.ArtifactPromotionJobDslExtension.RepositorySystem;
@@ -21,12 +20,12 @@ public class ArtifactPromotionDslContext implements Context {
 	
 	private String stagingRepository;
 	private String stagingUser;
-	private Secret stagingPassword;
-	
+	private String stagingPassword;
+
 	private String releaseRepository;
 	private String releaseUser;
-	private Secret releasePassword;
-	
+	private String releasePassword;
+
 	private String promoterClass = RepositorySystem.NexusOSS.getClassName();
 	private boolean debug = false;
 	private boolean skipDeletion = true;
@@ -72,7 +71,7 @@ public class ArtifactPromotionDslContext implements Context {
 	public void stagingRepository(String repository, String user, String password, boolean skipDeletion) {
 		this.stagingRepository = repository;
 		this.stagingUser = user;
-		this.stagingPassword = Secret.fromString(password);
+		this.stagingPassword = password;
 		this.skipDeletion = skipDeletion;
 	}
 	String getStagingRepository() {
@@ -83,14 +82,14 @@ public class ArtifactPromotionDslContext implements Context {
 		return stagingUser;
 	}
 
-	Secret getStagingPassword() {
+	String getStagingPassword() {
 		return stagingPassword;
 	}
 
 	public void releaseRepository(String repository, String user, String password) {
 		this.releaseRepository = repository;
 		this.releaseUser = user;
-		this.releasePassword = Secret.fromString(password);
+		this.releasePassword = password;
 	}
 	String getReleaseRepository() {
 		return releaseRepository;
@@ -100,7 +99,7 @@ public class ArtifactPromotionDslContext implements Context {
 		return releaseUser;
 	}
 
-	Secret getReleasePassword() {
+	String getReleasePassword() {
 		return releasePassword;
 	}
 
