@@ -88,7 +88,7 @@
     <properties>
         <jenkins.version>2.25</jenkins.version>
         <aetherVersion>1.0.0.v20140518</aetherVersion>
-        <commonsIoVersion>1.4</commonsIoVersion>
+        <commonsIoVersion>2.4</commonsIoVersion>
         <mavenVersion>3.3.9</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.9.1</jerseyVersion>
