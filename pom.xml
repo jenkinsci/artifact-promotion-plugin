@@ -93,6 +93,7 @@
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.9.1</jerseyVersion>
         <jobdslVersion>1.35</jobdslVersion>
+        <basicStepVersion>2.6</basicStepVersion>
     </properties>
 
     <dependencies>
@@ -157,6 +158,11 @@
         	<artifactId>job-dsl</artifactId>
         	<version>${jobdslVersion}</version>
         	<optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-basic-steps</artifactId>
+            <version>${basicStepVersion}</version>
         </dependency>
     </dependencies>
 
