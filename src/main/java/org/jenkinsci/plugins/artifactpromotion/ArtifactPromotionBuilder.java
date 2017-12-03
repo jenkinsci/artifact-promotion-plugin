@@ -1,17 +1,17 @@
 /**
  * The MIT License
  * Copyright (c) 2014 Halil-Cem Guersoy and all contributors
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,454 +36,281 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
-import org.jenkinsci.plugins.artifactpromotion.jobdsl.ArtifactPromotionJobDslExtension;
-import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * In this class we encapsulate the process of moving an artifact from one
- * repository into another one.
- * 
+ * Executes a promotion configured via the Jenkins UI.
+ *
  * @author Halil-Cem Guersoy (hcguersoy@gmail.com)
- * 
+ *
  */
 public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep {
 
-	/**
-	 * The POM extension.
-	 */
-	public static final String POMTYPE = "pom";
+    /**
+     * The POM extension.
+     */
+    public static final String POMTYPE = "pom";
 
-	private final String groupId;
-	private final String artifactId;
-	private final String classifier;
-	private final String version;
-	private final String extension;
+    private ArtifactPromotionHelper artifactPromotionHelper;
 
-	/**
-	 * The location of the local repository system relative to the workspace. In
-	 * this repository the downloaded artifact will be saved.
-	 */
-	private final String localRepoLocation = "target" + File.separator
-			+ "local-repo";
+    /**
+     * The default constructor. The parameters are injected by jenkins builder
+     * and are the same as the (private) fields.
+     *
+     * @param groupId
+     *            The groupId of the artifact
+     * @param artifactId
+     *            The artifactId of the artifact.
+     * @param classifier
+     *            The classifier of the artifact.
+     * @param version
+     *            The version of the artifact.
+     * @param extension
+     *            The file extension of the artifact.
+     * @param stagingRepository
+     *            The URL of the staging repository.
+     * @param stagingUser
+     *            User to be used on staging repo.
+     * @param stagingPW
+     *            Password to be used on staging repo.
+     * @param releaseUser
+     *            User to be used on release repo.
+     * @param releasePW
+     *            Password to be used on release repo.
+     * @param releaseRepository
+     *            The URL of the staging repository
+     * @param promoterClass
+     * 			  The vendor specific class which is used for the promotion, e.g. for NexusOSS
+     * @param debug
+     *            Flag for debug output. Currently not used.
+     */
+    @DataBoundConstructor
+    public ArtifactPromotionBuilder(String groupId, String artifactId, String classifier,
+                                    String version, String extension, String stagingRepository,
+                                    String stagingUser, String stagingPW, String releaseUser,
+                                    String releasePW, String releaseRepository, String promoterClass,
+                                    boolean debug, boolean skipDeletion) {
+        artifactPromotionHelper = new ArtifactPromotionHelper(groupId, artifactId, classifier,
+                version, extension, stagingRepository,
+                stagingUser, stagingPW, releaseUser,
+                releasePW, releaseRepository, promoterClass,
+                debug, skipDeletion);
+    }
 
-	/**
-	 * Name of the promoter class.
-	 */
-	private final String promoterClass;
-	
-	// Fields for UI
-	/**
-	 * The repository there the artifact is. In a normal case a staging
-	 * repository.
-	 */
-	private final String stagingRepository;
+    @Override
+    public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
+                        @Nonnull TaskListener listener) {
+        PrintStream logger = listener.getLogger();
+        artifactPromotionHelper.perform(logger, build, workspace, launcher, listener);
+    }
 
-	/**
-	 * The User for the staging Repository
-	 */
-	private final String stagingUser;
+    @Override
+    public ArtifactPromotionDescriptorImpl getDescriptor() {
+        return (ArtifactPromotionDescriptorImpl) super.getDescriptor();
+    }
 
-	/**
-	 * The staging secret. We should still save the passwords using the
-	 * credentials plugin but its so bad documented :-(
-	 */
-	private final Secret stagingPW;
+    /**
+     * Descriptor for {@link ArtifactPromotionBuilder}.
+     */
+    @Extension
+    public static final class ArtifactPromotionDescriptorImpl extends
+            BuildStepDescriptor<Builder> {
 
-	/**
-	 * The user for the release repo.
-	 */
-	private final String releaseUser;
+        /**
+         * In order to load the persisted global configuration, you have to call
+         * load() in the constructor.
+         */
+        public ArtifactPromotionDescriptorImpl() {
+            load();
+        }
 
-	/**
-	 * The release repo secret
-	 */
-	private final Secret releasePW;
+        // Form validation
 
-	/**
-	 * The repository into the artifact has to be moved.
-	 */
-	private final String releaseRepository;
+        /**
+         * Performs on-the-fly validation of the form field 'name'.
+         *
+         * @param value
+         *            This parameter receives the value that the user has typed.
+         * @return Indicates the outcome of the validation. This is sent to the
+         *         browser.
+         */
+        public FormValidation doCheckArtifactId(@QueryParameter String value) {
+            if (value.length() == 0)
+                return FormValidation.error("Please set an ArtifactId!");
+            return FormValidation.ok();
+        }
 
-	/**
-	 * Flag to write more info in the job console.
-	 */
-	private final boolean debug;
+        public FormValidation doCheckGroupId(@QueryParameter String value) {
+            if (value.length() == 0)
+                return FormValidation.error("Please set a GroupId!");
+            return FormValidation.ok();
+        }
 
-	/**
-	 * If true don't delete the artifact from the source repository. 
-	 */
-	private boolean skipDeletion;
+        public FormValidation doCheckVersion(@QueryParameter String value) {
+            if (value.length() == 0)
+                return FormValidation
+                        .error("Please set a Version for your artifact!");
+            return FormValidation.ok();
+        }
 
-	/**
-	 * The default constructor. The parameters are injected by jenkins builder
-	 * and are the same as the (private) fields.
-	 * 
-	 * @param groupId
-	 *            The groupId of the artifact
-	 * @param artifactId
-	 *            The artifactId of the artifact.
-	 * @param classifier
-	 *            The classifier of the artifact.
-	 * @param version
-	 *            The version of the artifact.
-	 * @param extension
-	 *            The file extension of the artifact.
-	 * @param stagingRepository
-	 *            The URL of the staging repository.
-	 * @param stagingUser
-	 *            User to be used on staging repo.
-	 * @param stagingPW
-	 *            Password to be used on staging repo.
-	 * @param releaseUser
-	 *            User to be used on release repo.
-	 * @param releasePW
-	 *            Password to be used on release repo.
-	 * @param releaseRepository
-	 *            The URL of the staging repository
-	 * @param promoterClass
-	 * 			  The vendor specific class which is used for the promotion, e.g. for NexusOSS
-	 * @param debug
-	 *            Flag for debug output. Currently not used.
-	 */
-	@DataBoundConstructor
-	public ArtifactPromotionBuilder(String groupId, String artifactId, String classifier,
-									String version, String extension, String stagingRepository,
-									String stagingUser, String stagingPW, String releaseUser,
-									String releasePW, String releaseRepository, String promoterClass,
-									boolean debug, boolean skipDeletion) {
+        public FormValidation doCheckStagingRepository(
+                @QueryParameter String value) {
+            return checkURI(value);
+        }
 
-		this.groupId = groupId;
-		this.artifactId = artifactId;
-		this.classifier = classifier;
-		this.version = version;
-		this.extension = extension == null ? "jar" : extension;
-		this.stagingRepository = stagingRepository;
-		this.stagingUser = stagingUser;
-		this.stagingPW = Secret.fromString(stagingPW);
-		this.releaseUser = releaseUser;
-		this.releasePW = Secret.fromString(releasePW);
-		this.releaseRepository = releaseRepository;
-		this.debug = debug;
-		this.promoterClass = promoterClass;
-		this.skipDeletion = skipDeletion;
-	}
-	
-	@Override
-	public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
-						@Nonnull TaskListener listener) {
-		
-		
-		PrintStream logger = listener.getLogger();
-		AbstractPromotor artifactPromotor = null;
-		
-		// Initialize the promoter class
-		// moved to here as the constructor of the builder is bypassed by stapler
-		try {
-			
-			if (debug) {
-				logger.println("Used promoter class: " + promoterClass);
-			}
+        public FormValidation doCheckReleaseRepository(
+                @QueryParameter String value) {
+            return checkURI(value);
+        }
 
-			// TODO: Use this.promoterClass
-		    artifactPromotor = (AbstractPromotor) Jenkins.getInstance()
-					.getExtensionList(ArtifactPromotionJobDslExtension.RepositorySystem.NexusOSS.getClassName()).iterator().next();
-			
-		} catch (ClassNotFoundException e) {
-			logger.println("ClassNotFoundException - unable to pick correct promotor class: " + e );
-			throw new RuntimeException(e);
-		}
+        /**
+         * This method checks originally the URL if it is valid. On the way to
+         * support tokens this behavior is build out. It will be reactivated
+         * after a general refactoring for better token macro support.
+         *
+         * TODO implment a URL validation which works with token macro plugin
+         *
+         * @param value
+         * @return
+         */
+        private FormValidation checkURI(String value) {
+            if (value.length() == 0) {
+                return FormValidation
+                        .error("Please set an URL for the staging repository!");
+            }
+            return FormValidation.ok();
+        }
 
-		if (artifactPromotor == null) {
-			logger.println("artifactPromotor is null - ABORTING!");
-			return;
-		}
-		artifactPromotor.setListener(listener);
-	
-		Map<PromotionBuildTokens, String> expandedTokens = expandTokens(build, workspace,
-				listener);
-		if (expandedTokens == null) {
-			logger.println("Could not expand tokens - ABORTING!");
-			return;
-		}
-		artifactPromotor.setExpandedTokens(expandedTokens);
-		artifactPromotor.setReleasePassword(releasePW);
-		artifactPromotor.setReleaseUser(releaseUser);
-		artifactPromotor.setStagingPassword(stagingPW);
-		artifactPromotor.setStagingUser(stagingUser);
-		artifactPromotor.setSkipDeletion(skipDeletion);
-		
-		String localRepoPath = workspace.getRemote() + File.separator
-				+ this.localRepoLocation;
-		artifactPromotor.setLocalRepositoryURL(localRepoPath);
+        // TODO connectivity tests
 
-		if (debug) {
-			logger.println("Local repository path: [" + localRepoPath + "]");
-		}
+        public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+            return true;
+        }
 
-		try {
-			artifactPromotor.callPromotor(launcher.getChannel());
-		} catch (PromotionException e) {
-			logger.println(e.getMessage());
-		}
-	}
+        /**
+         * This human readable name is used in the configuration screen.
+         */
+        public String getDisplayName() {
+            return "Single Artifact Promotion";
+        }
 
-	/**
-	 * Expands needed build tokens
-	 * 
-	 * @param build
-	 * @param listener
-	 * @return Map<PromotionBuildTokens, String> of expanded tokens
-	 */
-	private Map<PromotionBuildTokens, String> expandTokens(
-			Run<?, ?> build, FilePath workspace, TaskListener listener) {
-		PrintStream logger = listener.getLogger();
-		Map<PromotionBuildTokens, String> tokens = new HashMap<PromotionBuildTokens, String>();
-		try {
-			tokens.put(PromotionBuildTokens.GROUP_ID,
-					TokenMacro.expandAll(build, workspace, listener, groupId));
-			tokens.put(PromotionBuildTokens.ARTIFACT_ID,
-					TokenMacro.expandAll(build, workspace, listener, artifactId));
-			tokens.put(PromotionBuildTokens.CLASSIFIER,
-					TokenMacro.expandAll(build, workspace, listener, classifier));
-			tokens.put(PromotionBuildTokens.VERSION,
-					TokenMacro.expandAll(build, workspace, listener, version));
-			tokens.put(PromotionBuildTokens.EXTENSION, "".equals(extension) ? "jar" :
-					TokenMacro.expandAll(build, workspace, listener, extension));
-			tokens.put(PromotionBuildTokens.STAGING_REPOSITORY,
-					TokenMacro.expandAll(build, workspace, listener, stagingRepository));
-			tokens.put(PromotionBuildTokens.RELEASE_REPOSITORY,
-					TokenMacro.expandAll(build, workspace, listener, releaseRepository));
-		} catch (MacroEvaluationException mee) {
-			logger.println("Could not evaluate a makro" + mee);
-			return null;
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject formData)
+                throws FormException {
+            // To persist global configuration information,
+            // set that to properties and call save().
+            // useFrench = formData.getBoolean("useFrench");
+            // ^Can also use req.bindJSON(this, formData);
+            // (easier when there are many fields; need set* methods for this,
+            // like setUseFrench)
+            // save();
+            return super.configure(req, formData);
+        }
 
-		} catch (IOException ioe) {
-			logger.println("Got an IOException during evaluation of a makro token"
-					+ ioe);
-			return null;
-		} catch (InterruptedException ie) {
-			logger.println("Got an InterruptedException during avaluating a makro token"
-					+ ie);
-			return null;
-		}
-		return tokens;
-	}
+        /**
+         * Generates LisBoxModel for available Repository systems
+         *
+         * @return available Promoters as ListBoxModel
+         */
+        public ListBoxModel doFillPromoterClassItems() {
+            ListBoxModel promoterModel = new ListBoxModel();
+            for (Promotor promotor : Jenkins.getInstance()
+                    .getExtensionList(Promotor.class)) {
+                promoterModel.add(promotor.getDescriptor().getDisplayName(), promotor
+                        .getClass().getCanonicalName());
+            }
 
+            return promoterModel;
+        }
+    }
 
-	@Override
-	public ArtifactPromotionDescriptorImpl getDescriptor() {
-		return (ArtifactPromotionDescriptorImpl) super.getDescriptor();
-	}
+    public String getGroupId() {
+        return artifactPromotionHelper.groupId;
+    }
 
-	/**
-	 * Descriptor for {@link ArtifactPromotionBuilder}.
-	 */
-	@Extension
-	public static final class ArtifactPromotionDescriptorImpl extends
-			BuildStepDescriptor<Builder> {
+    public String getArtifactId() {
+        return artifactPromotionHelper.artifactId;
+    }
 
-		/**
-		 * In order to load the persisted global configuration, you have to call
-		 * load() in the constructor.
-		 */
-		public ArtifactPromotionDescriptorImpl() {			
-			load();
-		}
-		
-		// Form validation
+    public String getClassifier() {
+        return artifactPromotionHelper.classifier;
+    }
 
-		/**
-		 * Performs on-the-fly validation of the form field 'name'.
-		 * 
-		 * @param value
-		 *            This parameter receives the value that the user has typed.
-		 * @return Indicates the outcome of the validation. This is sent to the
-		 *         browser.
-		 */
-		public FormValidation doCheckArtifactId(@QueryParameter String value) {
-			if (value.length() == 0)
-				return FormValidation.error("Please set an ArtifactId!");
-			return FormValidation.ok();
-		}
+    public String getVersion() {
+        return artifactPromotionHelper.version;
+    }
 
-		public FormValidation doCheckGroupId(@QueryParameter String value) {
-			if (value.length() == 0)
-				return FormValidation.error("Please set a GroupId!");
-			return FormValidation.ok();
-		}
+    public String getExtension() {
+        return artifactPromotionHelper.extension;
+    }
 
-		public FormValidation doCheckVersion(@QueryParameter String value) {
-			if (value.length() == 0)
-				return FormValidation
-						.error("Please set a Version for your artifact!");
-			return FormValidation.ok();
-		}
+    public String getStagingRepository() {
+        return artifactPromotionHelper.stagingRepository;
+    }
 
-		public FormValidation doCheckStagingRepository(
-				@QueryParameter String value) {
-			return checkURI(value);
-		}
+    public String getStagingUser() {
+        return artifactPromotionHelper.stagingUser;
+    }
 
-		public FormValidation doCheckReleaseRepository(
-				@QueryParameter String value) {
-			return checkURI(value);
-		}
+    public Secret getStagingPW() {
+        return artifactPromotionHelper.stagingPW;
+    }
 
-		/**
-		 * This method checks originally the URL if it is valid. On the way to
-		 * support tokens this behavior is build out. It will be reactivated
-		 * after a general refactoring for better token macro support.
-		 * 
-		 * TODO implment a URL validation which works with token macro plugin
-		 * 
-		 * @param value
-		 * @return
-		 */
-		private FormValidation checkURI(String value) {
-			if (value.length() == 0) {
-				return FormValidation
-						.error("Please set an URL for the staging repository!");
-			}
-			return FormValidation.ok();
-		}
+    public String getReleaseUser() {
+        return artifactPromotionHelper.releaseUser;
+    }
 
-		// TODO connectivity tests
+    public Secret getReleasePW() {
+        return artifactPromotionHelper.releasePW;
+    }
 
-		public boolean isApplicable(Class<? extends AbstractProject> aClass) {
-			return true;
-		}
+    public String getReleaseRepository() {
+        return artifactPromotionHelper.releaseRepository;
+    }
 
-		/**
-		 * This human readable name is used in the configuration screen.
-		 */
-		public String getDisplayName() {
-			return "Single Artifact Promotion";
-		}
+    public boolean isDebug() {
+        return artifactPromotionHelper.debug;
+    }
 
-		@Override
-		public boolean configure(StaplerRequest req, JSONObject formData)
-				throws FormException {
-			// To persist global configuration information,
-			// set that to properties and call save().
-			// useFrench = formData.getBoolean("useFrench");
-			// ^Can also use req.bindJSON(this, formData);
-			// (easier when there are many fields; need set* methods for this,
-			// like setUseFrench)
-			// save();
-			return super.configure(req, formData);
-		}
+    public boolean isSkipDeletion() {
+        return artifactPromotionHelper.skipDeletion;
+    }
 
-		/**
-		 * Generates LisBoxModel for available Repository systems
-		 * 
-		 * @return available Promoters as ListBoxModel
-		 */
-		public ListBoxModel doFillPromoterClassItems() {
-			ListBoxModel promoterModel = new ListBoxModel();
-			for (Promotor promotor : Jenkins.getInstance()
-					.getExtensionList(Promotor.class)) {
-				promoterModel.add(promotor.getDescriptor().getDisplayName(), promotor
-						.getClass().getCanonicalName());
-			}
-
-			return promoterModel;
-		}
-	}
-
-	public String getGroupId() {
-		return groupId;
-	}
-
-	public String getArtifactId() {
-		return artifactId;
-	}
-
-	public String getClassifier() {
-		return classifier;
-	}
-
-	public String getVersion() {
-		return version;
-	}
-
-	public String getExtension() {
-		return extension;
-	}
-
-	public String getStagingRepository() {
-		return stagingRepository;
-	}
-
-	public String getStagingUser() {
-		return stagingUser;
-	}
-
-	public Secret getStagingPW() {
-		return stagingPW;
-	}
-
-	public String getReleaseUser() {
-		return releaseUser;
-	}
-
-	public Secret getReleasePW() {
-		return releasePW;
-	}
-
-	public String getReleaseRepository() {
-		return releaseRepository;
-	}
-	
-	public boolean isDebug() {
-		return debug;
-	}
-	
-	public boolean isSkipDeletion() {
-		return skipDeletion;
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("ArtifactPromotionBuilder [POMTYPE=");
-		builder.append(POMTYPE);
-		builder.append(", groupId=");
-		builder.append(groupId);
-		builder.append(", artifactId=");
-		builder.append(artifactId);
-		builder.append(", classifier=");
-		builder.append(classifier);
-		builder.append(", version=");
-		builder.append(version);
-		builder.append(", extension=");
-		builder.append(extension);
-		builder.append(", localRepoLocation=");
-		builder.append(localRepoLocation);
-		builder.append(", stagingRepository=");
-		builder.append(stagingRepository);
-		builder.append(", stagingUser=");
-		builder.append(stagingUser);
-		builder.append(", releaseUser=");
-		builder.append(releaseUser);
-		builder.append(", releaseRepository=");
-		builder.append(releaseRepository);
-		builder.append(", debug=");
-		builder.append(debug);
-		builder.append(", skipDeletion=");
-		builder.append(skipDeletion);		
-		builder.append("]");
-		return builder.toString();
-	}
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ArtifactPromotionBuilder [POMTYPE=");
+        builder.append(POMTYPE);
+        builder.append(", groupId=");
+        builder.append(artifactPromotionHelper.groupId);
+        builder.append(", artifactId=");
+        builder.append(artifactPromotionHelper.artifactId);
+        builder.append(", classifier=");
+        builder.append(artifactPromotionHelper.classifier);
+        builder.append(", version=");
+        builder.append(artifactPromotionHelper.version);
+        builder.append(", extension=");
+        builder.append(artifactPromotionHelper.extension);
+        builder.append(", localRepoLocation=");
+        builder.append(artifactPromotionHelper.localRepoLocation);
+        builder.append(", stagingRepository=");
+        builder.append(artifactPromotionHelper.stagingRepository);
+        builder.append(", stagingUser=");
+        builder.append(artifactPromotionHelper.stagingUser);
+        builder.append(", releaseUser=");
+        builder.append(artifactPromotionHelper.releaseUser);
+        builder.append(", releaseRepository=");
+        builder.append(artifactPromotionHelper.releaseRepository);
+        builder.append(", debug=");
+        builder.append(artifactPromotionHelper.debug);
+        builder.append(", skipDeletion=");
+        builder.append(artifactPromotionHelper.skipDeletion);
+        builder.append("]");
+        return builder.toString();
+    }
 }
