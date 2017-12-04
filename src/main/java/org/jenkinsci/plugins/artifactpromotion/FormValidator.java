@@ -1,6 +1,8 @@
 package org.jenkinsci.plugins.artifactpromotion;
 
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -63,6 +65,22 @@ public interface FormValidator {
                     .error("Please set an URL for the staging repository!");
         }
         return FormValidation.ok();
+    }
+
+    /**
+     * Generates LisBoxModel for available Repository systems
+     *
+     * @return available Promoters as ListBoxModel
+     */
+    default ListBoxModel doFillPromoterClassItems() {
+        ListBoxModel promoterModel = new ListBoxModel();
+        for (Promotor promotor : Jenkins.getInstance()
+                .getExtensionList(Promotor.class)) {
+            promoterModel.add(promotor.getDescriptor().getDisplayName(), promotor
+                    .getClass().getCanonicalName());
+        }
+
+        return promoterModel;
     }
 
 }

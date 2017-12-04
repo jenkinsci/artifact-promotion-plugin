@@ -6,9 +6,11 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
 import java.io.PrintStream;
@@ -158,6 +160,10 @@ public class ArtifactPromotionStep extends Step implements Serializable {
     public static final class ArtifactPromotionStepDescriptorImpl extends
             StepDescriptor implements FormValidator {
 
+        public ArtifactPromotionStepDescriptorImpl() {
+            load();
+        }
+
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
             return ImmutableSet.of(Run.class, FilePath.class, Launcher.class, TaskListener.class);
@@ -167,6 +173,20 @@ public class ArtifactPromotionStep extends Step implements Serializable {
         public String getFunctionName() {
             return "artifactPromotion";
         }
+
+        @Override
+        public boolean configure(StaplerRequest req, JSONObject formData)
+                throws FormException {
+            // To persist global configuration information,
+            // set that to properties and call save().
+            // useFrench = formData.getBoolean("useFrench");
+            // ^Can also use req.bindJSON(this, formData);
+            // (easier when there are many fields; need set* methods for this,
+            // like setUseFrench)
+            // save();
+            return super.configure(req, formData);
+        }
+
     }
 
 }

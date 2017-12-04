@@ -153,21 +153,6 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
             return super.configure(req, formData);
         }
 
-        /**
-         * Generates LisBoxModel for available Repository systems
-         *
-         * @return available Promoters as ListBoxModel
-         */
-        public ListBoxModel doFillPromoterClassItems() {
-            ListBoxModel promoterModel = new ListBoxModel();
-            for (Promotor promotor : Jenkins.getInstance()
-                    .getExtensionList(Promotor.class)) {
-                promoterModel.add(promotor.getDescriptor().getDisplayName(), promotor
-                        .getClass().getCanonicalName());
-            }
-
-            return promoterModel;
-        }
     }
 
     public String getGroupId() {
