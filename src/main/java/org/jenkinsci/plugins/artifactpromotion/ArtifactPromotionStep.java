@@ -9,6 +9,7 @@ import hudson.model.TaskListener;
 import hudson.util.Secret;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.Nonnull;
 import java.io.PrintStream;
@@ -32,7 +33,6 @@ public class ArtifactPromotionStep extends Step implements Serializable {
      * @param artifactId        The artifactId of the artifact.
      * @param classifier        The classifier of the artifact.
      * @param version           The version of the artifact.
-     * @param extension         The file extension of the artifact.
      * @param stagingRepository The URL of the staging repository.
      * @param stagingUser       User to be used on staging repo.
      * @param stagingPW         Password to be used on staging repo.
@@ -44,15 +44,15 @@ public class ArtifactPromotionStep extends Step implements Serializable {
      */
     @DataBoundConstructor
     public ArtifactPromotionStep(String groupId, String artifactId, String classifier,
-                                 String version, String extension, String stagingRepository,
+                                 String version, String stagingRepository,
                                  String stagingUser, String stagingPW, String releaseUser,
                                  String releasePW, String releaseRepository, String promoterClass,
-                                 boolean debug, boolean skipDeletion) {
+                                 boolean debug) {
         artifactPromotionHelper = new ArtifactPromotionHelper(groupId, artifactId, classifier,
-                version, extension, stagingRepository,
+                version, "jar", stagingRepository,
                 stagingUser, stagingPW, releaseUser,
                 releasePW, releaseRepository, promoterClass,
-                debug, skipDeletion);
+                debug, true);
     }
 
     @Override
@@ -105,6 +105,11 @@ public class ArtifactPromotionStep extends Step implements Serializable {
         return artifactPromotionHelper.version;
     }
 
+    @DataBoundSetter
+    public void setExtension(String extension) {
+        artifactPromotionHelper.extension = extension;
+    }
+
     public String getExtension() {
         return artifactPromotionHelper.extension;
     }
@@ -117,16 +122,16 @@ public class ArtifactPromotionStep extends Step implements Serializable {
         return artifactPromotionHelper.stagingUser;
     }
 
-    public Secret getStagingPW() {
-        return artifactPromotionHelper.stagingPW;
+    public String getStagingPW() {
+        return artifactPromotionHelper.stagingPW.toString();
     }
 
     public String getReleaseUser() {
         return artifactPromotionHelper.releaseUser;
     }
 
-    public Secret getReleasePW() {
-        return artifactPromotionHelper.releasePW;
+    public String getReleasePW() {
+        return artifactPromotionHelper.releasePW.toString();
     }
 
     public String getReleaseRepository() {
@@ -135,6 +140,11 @@ public class ArtifactPromotionStep extends Step implements Serializable {
 
     public boolean isDebug() {
         return artifactPromotionHelper.debug;
+    }
+
+    @DataBoundSetter
+    public void setSkipDeletion(boolean skipDeletion) {
+        artifactPromotionHelper.skipDeletion = skipDeletion;
     }
 
     public boolean isSkipDeletion() {

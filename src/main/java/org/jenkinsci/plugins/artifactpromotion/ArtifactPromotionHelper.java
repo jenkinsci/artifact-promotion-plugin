@@ -30,7 +30,7 @@ public class ArtifactPromotionHelper implements Serializable {
     protected final String artifactId;
     protected final String classifier;
     protected final String version;
-    protected final String extension;
+    protected String extension;
 
     /**
      * The location of the local repository system relative to the workspace. In
