@@ -30,14 +30,12 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
@@ -119,7 +117,7 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
      */
     @Extension
     public static final class ArtifactPromotionDescriptorImpl extends
-            BuildStepDescriptor<Builder> {
+            BuildStepDescriptor<Builder> implements FormValidator {
 
         /**
          * In order to load the persisted global configuration, you have to call
@@ -127,63 +125,6 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
          */
         public ArtifactPromotionDescriptorImpl() {
             load();
-        }
-
-        // Form validation
-
-        /**
-         * Performs on-the-fly validation of the form field 'name'.
-         *
-         * @param value
-         *            This parameter receives the value that the user has typed.
-         * @return Indicates the outcome of the validation. This is sent to the
-         *         browser.
-         */
-        public FormValidation doCheckArtifactId(@QueryParameter String value) {
-            if (value.length() == 0)
-                return FormValidation.error("Please set an ArtifactId!");
-            return FormValidation.ok();
-        }
-
-        public FormValidation doCheckGroupId(@QueryParameter String value) {
-            if (value.length() == 0)
-                return FormValidation.error("Please set a GroupId!");
-            return FormValidation.ok();
-        }
-
-        public FormValidation doCheckVersion(@QueryParameter String value) {
-            if (value.length() == 0)
-                return FormValidation
-                        .error("Please set a Version for your artifact!");
-            return FormValidation.ok();
-        }
-
-        public FormValidation doCheckStagingRepository(
-                @QueryParameter String value) {
-            return checkURI(value);
-        }
-
-        public FormValidation doCheckReleaseRepository(
-                @QueryParameter String value) {
-            return checkURI(value);
-        }
-
-        /**
-         * This method checks originally the URL if it is valid. On the way to
-         * support tokens this behavior is build out. It will be reactivated
-         * after a general refactoring for better token macro support.
-         *
-         * TODO implment a URL validation which works with token macro plugin
-         *
-         * @param value
-         * @return
-         */
-        private FormValidation checkURI(String value) {
-            if (value.length() == 0) {
-                return FormValidation
-                        .error("Please set an URL for the staging repository!");
-            }
-            return FormValidation.ok();
         }
 
         // TODO connectivity tests

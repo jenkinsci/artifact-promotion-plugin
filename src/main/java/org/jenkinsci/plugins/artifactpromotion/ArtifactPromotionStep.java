@@ -6,7 +6,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.util.Secret;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -156,8 +155,8 @@ public class ArtifactPromotionStep extends Step implements Serializable {
     }
 
     @Extension
-    public static final class ArtiactPromotionStepDescriptorImpl extends
-            StepDescriptor {
+    public static final class ArtifactPromotionStepDescriptorImpl extends
+            StepDescriptor implements FormValidator {
 
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
