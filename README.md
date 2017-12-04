@@ -56,19 +56,19 @@ For usage within Pipeline scripts use the snippet generator or see the example b
 
 ```
 stage('example') {
-		artifactPromotion (
-				groupId: 'com.example.test',
-				artifactId: 'my-artifact',
-				version: '1.0.0',
-				extension: 'zip',
-				stagingRepository: 'http://nexus.myorg.com:8080/content/repositories/release-candidates',
-				stagingUser: 'foo',
-				stagingPW: 's3cr3t',
-				skipDeletion: true,
-				releaseRepository: 'http://nexus.myorg.com:8080/content/repositories/releases',
-				releaseUser: 'foo',
-				releasePW: 's3cr3t'
-		)
+    artifactPromotion (
+        groupId: 'com.example.test',
+        artifactId: 'my-artifact',
+        version: '1.0.0',
+        extension: 'zip',
+        stagingRepository: 'http://nexus.myorg.com:8080/content/repositories/release-candidates',
+        stagingUser: 'foo',
+        stagingPW: 's3cr3t',
+        skipDeletion: true,
+        releaseRepository: 'http://nexus.myorg.com:8080/content/repositories/releases',
+        releaseUser: 'foo',
+        releasePW: 's3cr3t'
+    )
 }
 ```
 
