@@ -51,6 +51,27 @@ job('example') {
 }
 ```
 
+## Pipeline
+For usage within Pipeline scripts use the snippet generator or see the example below:
+
+```
+stage('example') {
+		artifactPromotion (
+				groupId: 'com.example.test',
+				artifactId: 'my-artifact',
+				version: '1.0.0',
+				extension: 'zip',
+				stagingRepository: 'http://nexus.myorg.com:8080/content/repositories/release-candidates',
+				stagingUser: 'foo',
+				stagingPW: 's3cr3t',
+				skipDeletion: true,
+				releaseRepository: 'http://nexus.myorg.com:8080/content/repositories/releases',
+				releaseUser: 'foo',
+				releasePW: 's3cr3t'
+		)
+}
+```
+
 ## Artifact deletion
 When you promote artifacts from the staging to the release repository you may want to remove the artifact from staging. If your artifact only has one associated file, the plugin works as expected.
 Although if you're using classifiers, deletion removes all files associated with the artifact. The *Skip deletion* option preserves the files in the staging repository. 
