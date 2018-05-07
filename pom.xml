@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>2.25</version>
+        <version>3.5</version>
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
@@ -75,25 +75,28 @@
         <roles>
           <role>contributor</role>
         </roles>
-      </contributor>  
+      </contributor>
       <contributor>
         <name>Mate Farkas</name>
         <url>https://github.com/farkasmate</url>
         <roles>
             <role>contributor</role>
         </roles>
-      </contributor>    
-    </contributors>    
+      </contributor>
+    </contributors>
 
     <properties>
-        <jenkins.version>2.25</jenkins.version>
-        <aetherVersion>1.0.0.v20140518</aetherVersion>
+        <java.level>8</java.level>
+        <jenkins.version>2.112</jenkins.version>
+        <aetherVersion>1.0.2.v20150114</aetherVersion>
         <commonsIoVersion>2.4</commonsIoVersion>
         <mavenVersion>3.3.9</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.9.1</jerseyVersion>
-        <jobdslVersion>1.35</jobdslVersion>
-        <basicStepVersion>2.6</basicStepVersion>
+        <jobdslVersion>1.69</jobdslVersion>
+        <basicStepVersion>2.7</basicStepVersion>
+        <scmapiVersion>2.2.7</scmapiVersion>
+        <workflowAggregatorVersion>2.5</workflowAggregatorVersion>
     </properties>
 
     <dependencies>
@@ -163,6 +166,17 @@
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-basic-steps</artifactId>
             <version>${basicStepVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>scm-api</artifactId>
+            <version>${scmapiVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-aggregator</artifactId>
+            <version>${workflowAggregatorVersion}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
