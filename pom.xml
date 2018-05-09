@@ -83,6 +83,14 @@
             <role>contributor</role>
         </roles>
       </contributor>
+      <contributor>
+        <name>Julian Sauer</name>
+        <email>julian_sauer@gmx.net</email>
+        <url>https://github.com/juliansauer</url>
+        <roles>
+          <role>contributor</role>
+        </roles>
+      </contributor>
     </contributors>
 
     <properties>
