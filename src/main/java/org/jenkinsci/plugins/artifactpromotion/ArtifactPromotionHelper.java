@@ -169,7 +169,7 @@ public class ArtifactPromotionHelper implements Serializable {
 
         if (artifactPromotor == null) {
             logger.println("artifactPromotor is null - ABORTING!");
-            return;
+            throw new RuntimeException("artifactPromotor is null!");
         }
         artifactPromotor.setListener(listener);
 
@@ -177,7 +177,7 @@ public class ArtifactPromotionHelper implements Serializable {
                 listener);
         if (expandedTokens == null) {
             logger.println("Could not expand tokens - ABORTING!");
-            return;
+            throw new RuntimeException("Could not expand tokens");
         }
         artifactPromotor.setExpandedTokens(expandedTokens);
         artifactPromotor.setReleasePassword(releasePW);
