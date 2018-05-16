@@ -81,9 +81,12 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
         return listener;
     }
 
-//	TODO handle deprecation of getInstance
     public static ExtensionList<Promotor> getAllPromoters() {
-        return Jenkins.getInstance().getExtensionList(Promotor.class);
+        ExtensionList<Promotor> exList = Jenkins.get().getExtensionList(Promotor.class);
+        if (exList == null) {
+            throw new IllegalStateException("None promoter extension found!");
+        }
+        return exList;
     }
 
     protected String getReleaseUser() {

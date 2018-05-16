@@ -160,7 +160,7 @@ public class ArtifactPromotionHelper implements Serializable {
             }
 
             // TODO: Use this.promoterClass
-            artifactPromotor = (AbstractPromotor) Jenkins.getInstance()
+            artifactPromotor = (AbstractPromotor) Jenkins.get()
                     .getExtensionList(ArtifactPromotionJobDslExtension.RepositorySystem.NexusOSS.getClassName()).iterator().next();
 
         } catch (ClassNotFoundException e) {
