@@ -22,6 +22,7 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -35,10 +36,12 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.io.PrintStream;
 
 /**
@@ -102,9 +105,14 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
 
     @Override
     public void perform(@Nonnull Run<?, ?> build, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
-                        @Nonnull TaskListener listener) {
+                        @Nonnull TaskListener listener) throws AbortException {
         PrintStream logger = listener.getLogger();
-        artifactPromotionHelper.perform(logger, build, workspace, launcher, listener);
+        try {
+            artifactPromotionHelper.perform(logger, build, workspace, launcher, listener);
+        } catch (PromotionException promEx) {
+            logger.println(promEx.getMessage());
+            throw new AbortException(promEx.getMessage());
+        }
     }
 
     @Override

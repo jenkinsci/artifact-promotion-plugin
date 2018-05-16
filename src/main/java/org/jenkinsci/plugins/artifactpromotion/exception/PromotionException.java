@@ -25,7 +25,7 @@ package org.jenkinsci.plugins.artifactpromotion.exception;
 public class PromotionException extends Exception {
 
     /**
-     *
+     * Nothing to say...
      */
     private static final long serialVersionUID = 1L;
 

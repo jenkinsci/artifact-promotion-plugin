@@ -76,7 +76,8 @@ public class AetherInteraction {
      * @param releaseRepo
      * @param artifact
      * @param pom
-     * @return
+     * @return An object of type {@link DeployResult} which contains the request
+     * and links to the involved artifacts
      * @throws DeploymentException
      */
     protected DeployResult deployArtifact(final RepositorySystemSession session, final RepositorySystem system,

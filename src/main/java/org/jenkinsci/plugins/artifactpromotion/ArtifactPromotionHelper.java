@@ -148,7 +148,7 @@ public class ArtifactPromotionHelper implements Serializable {
         this.skipDeletion = skipDeletion;
     }
 
-    public void perform(PrintStream logger, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
+    public void perform(PrintStream logger, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws PromotionException {
         AbstractPromotor artifactPromotor = null;
 
         // Initialize the promoter class
@@ -197,8 +197,9 @@ public class ArtifactPromotionHelper implements Serializable {
 
         try {
             artifactPromotor.callPromotor(launcher.getChannel());
-        } catch (PromotionException e) {
-            logger.println(e.getMessage());
+        } catch (PromotionException promEx) {
+            logger.println(promEx.getMessage());
+            throw promEx;
         }
     }
 
