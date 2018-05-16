@@ -13,11 +13,11 @@ import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
  */
 public interface IPromotorClosure {
 
-	/**
-	 * This methods does the real 'promotion'.
-	 * 
-	 * @throws PromotionException
-	 */
-	public abstract void promote() throws PromotionException;
+    /**
+     * This methods does the real 'promotion'.
+     *
+     * @throws PromotionException
+     */
+    public abstract void promote() throws PromotionException;
 
 }

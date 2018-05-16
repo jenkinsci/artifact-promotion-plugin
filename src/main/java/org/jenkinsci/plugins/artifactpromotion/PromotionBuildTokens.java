@@ -24,11 +24,11 @@ package org.jenkinsci.plugins.artifactpromotion;
 
 public enum PromotionBuildTokens {
 
-	GROUP_ID,
-	ARTIFACT_ID,
-	CLASSIFIER,
-	VERSION,
-	EXTENSION,
-	STAGING_REPOSITORY,
-	RELEASE_REPOSITORY;
+    GROUP_ID,
+    ARTIFACT_ID,
+    CLASSIFIER,
+    VERSION,
+    EXTENSION,
+    STAGING_REPOSITORY,
+    RELEASE_REPOSITORY;
 }

@@ -19,30 +19,30 @@ import javaposse.jobdsl.plugin.DslExtensionMethod;
 @Extension(optional = true)
 public class ArtifactPromotionJobDslExtension extends ContextExtensionPoint {
 
-	@DslExtensionMethod(context = StepContext.class)
-	public Object artifactPromotion(Runnable closure) {
-		ArtifactPromotionDslContext context = new ArtifactPromotionDslContext();
-		executeInContext(closure, context);
-		
-		return new ArtifactPromotionBuilder(
-				context.getGroupId(), context.getArtifactId(), context.getClassifier(), context.getVersion(),
-				context.getExtension(), context.getStagingRepository(), context.getStagingUser(),
-				context.getStagingPassword(), context.getReleaseUser(), context.getReleasePassword(),
-				context.getReleaseRepository(), context.getPromoterClass(), context.isDebugEnabled(),
-				context.isSkipDeletionEnabled());
-	}
-	
-	public enum RepositorySystem {
-		NexusOSS(NexusOSSPromotor.class.getName());
-		
-		private String className;
-		
-		private RepositorySystem(String className) {
-			this.className = className;
-		}
-		
-		public String getClassName() {
-			return this.className;
-		}
-	}
+    @DslExtensionMethod(context = StepContext.class)
+    public Object artifactPromotion(Runnable closure) {
+        ArtifactPromotionDslContext context = new ArtifactPromotionDslContext();
+        executeInContext(closure, context);
+
+        return new ArtifactPromotionBuilder(
+                context.getGroupId(), context.getArtifactId(), context.getClassifier(), context.getVersion(),
+                context.getExtension(), context.getStagingRepository(), context.getStagingUser(),
+                context.getStagingPassword(), context.getReleaseUser(), context.getReleasePassword(),
+                context.getReleaseRepository(), context.getPromoterClass(), context.isDebugEnabled(),
+                context.isSkipDeletionEnabled());
+    }
+
+    public enum RepositorySystem {
+        NexusOSS(NexusOSSPromotor.class.getName());
+
+        private String className;
+
+        private RepositorySystem(String className) {
+            this.className = className;
+        }
+
+        public String getClassName() {
+            return this.className;
+        }
+    }
 }

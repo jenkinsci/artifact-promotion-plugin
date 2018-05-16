@@ -45,9 +45,9 @@ import java.io.Serializable;
  */
 public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
+    /**
      * The URL path delimiter.
      */
     private static final String DELI = "/";

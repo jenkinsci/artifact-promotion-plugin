@@ -58,10 +58,10 @@ import java.util.Map;
  * 
  */
 public class AetherInteraction {
-	
+
         private final static String TEMP_DIR_PREFIX = "artifactpromotion";
 
-	private TaskListener listener;
+    private TaskListener listener;
         
     public AetherInteraction(TaskListener listener) {
         super();
@@ -176,7 +176,7 @@ public class AetherInteraction {
      */
     protected RemoteRepository getRepository(final String user, final Secret password, final String repoId,
             final String repoURL) {
-            	
+
         if (user == null || password == null || repoId == null || repoURL == null) 
             throw new IllegalArgumentException("You cant provide null objects here.");
         

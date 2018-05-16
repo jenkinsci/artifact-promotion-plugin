@@ -34,13 +34,13 @@ import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
  *
  */
 public interface Promotor extends Describable<Promotor> {
-	
-	/**
-	 * This method calls the 'real' promotion stuff or may it do it self. 
-	 * 
-	 * @param channel - a hudson.Channel to enable runs on slaves.
-	 * @throws PromotionException thrown then the promotion has gone wrong 
-	 */
-	public void callPromotor(VirtualChannel channel) throws PromotionException;
-	
+
+    /**
+     * This method calls the 'real' promotion stuff or may it do it self.
+     *
+     * @param channel - a hudson.Channel to enable runs on slaves.
+     * @throws PromotionException thrown then the promotion has gone wrong
+     */
+    public void callPromotor(VirtualChannel channel) throws PromotionException;
+
 }

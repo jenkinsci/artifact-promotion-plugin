@@ -38,44 +38,44 @@ import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 @Extension
 public class NexusOSSPromotor extends AbstractPromotor {
 
-	
-	/** This method calls the Nexus OSS promoter which is encapsulated into a 'closure' to make this 
-	 * plugin run on slaves, too. 
-	 * 
-	 * @see org.jenkinsci.plugins.artifactpromotion.Promotor#callPromotor(hudson.remoting.VirtualChannel)
-	 */
-	public void callPromotor(VirtualChannel channel) throws PromotionException {
 
-		IPromotorClosure promotor = new NexusOSSPromoterClosure(
-				getListener(), 
-				getLocalRepositoryURL(),
-				getExpandedTokens(),
-				getReleaseUser(), 
-				getReleasePassword(), 
-				getStagingUser(),
-				getStagingPassword(),
-				isSkipDeletion());
+    /** This method calls the Nexus OSS promoter which is encapsulated into a 'closure' to make this
+     * plugin run on slaves, too.
+     *
+     * @see org.jenkinsci.plugins.artifactpromotion.Promotor#callPromotor(hudson.remoting.VirtualChannel)
+     */
+    public void callPromotor(VirtualChannel channel) throws PromotionException {
 
-		RemotePromoter promotorTask = new RemotePromoter(promotor);
-			
-		try {
-			channel.call(promotorTask);
-		} catch (Exception e) {
-			getListener().getLogger().println("Promotion could not be executed");
-			e.printStackTrace(getListener().getLogger());
-			throw new PromotionException("Promotion could not be executed: " + e.getMessage());
-		}
-	}
+        IPromotorClosure promotor = new NexusOSSPromoterClosure(
+                getListener(),
+                getLocalRepositoryURL(),
+                getExpandedTokens(),
+                getReleaseUser(),
+                getReleasePassword(),
+                getStagingUser(),
+                getStagingPassword(),
+                isSkipDeletion());
 
-	@SuppressWarnings("unchecked")
-	public Descriptor<Promotor> getDescriptor() {
-		return new AbstractPromotorDescription() {
+        RemotePromoter promotorTask = new RemotePromoter(promotor);
 
-			@Override
-			public String getDisplayName() {
-				return "Nexus OSS";
-			}
-		};
-	}
+        try {
+            channel.call(promotorTask);
+        } catch (Exception e) {
+            getListener().getLogger().println("Promotion could not be executed");
+            e.printStackTrace(getListener().getLogger());
+            throw new PromotionException("Promotion could not be executed: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Descriptor<Promotor> getDescriptor() {
+        return new AbstractPromotorDescription() {
+
+            @Override
+            public String getDisplayName() {
+                return "Nexus OSS";
+            }
+        };
+    }
 
 }
