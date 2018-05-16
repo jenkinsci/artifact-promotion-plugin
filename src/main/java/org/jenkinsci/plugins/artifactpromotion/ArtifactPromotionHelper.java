@@ -159,9 +159,8 @@ public class ArtifactPromotionHelper implements Serializable {
                 logger.println("Used promoter class: " + promoterClass);
             }
 
-            // TODO: Use this.promoterClass
             artifactPromotor = (AbstractPromotor) Jenkins.get()
-                    .getExtensionList(ArtifactPromotionJobDslExtension.RepositorySystem.NexusOSS.getClassName()).iterator().next();
+                    .getExtensionList(this.promoterClass).iterator().next();
 
         } catch (ClassNotFoundException e) {
             logger.println("ClassNotFoundException - unable to pick correct promotor class: " + e);
