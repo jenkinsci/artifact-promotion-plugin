@@ -40,89 +40,90 @@ import java.util.Map;
  */
 public abstract class AbstractPromotor extends ExtensionPoint implements Promotor {
 
-	private TaskListener listener;
-	private Map<PromotionBuildTokens, String> expandedTokens;
-	private String localRepositoryURL;	
-	
-	private String stagingUser;
-	private Secret stagingPassword;
-	
-	private String releaseUser;
-	private Secret releasePassword;
-	
-	private boolean skipDeletion;
-	
-	
-	public void setLocalRepositoryURL(String localRepositoryURL) {
-		this.localRepositoryURL = localRepositoryURL;
-	}
-	
-	protected String getLocalRepositoryURL() {
-		return localRepositoryURL;
-	}
-	
-	public void setExpandedTokens(
-			Map<PromotionBuildTokens, String> expandedTokens) {
-		this.expandedTokens = expandedTokens;
-	}
-	
-	protected Map<PromotionBuildTokens, String> getExpandedTokens() {
-		if(expandedTokens == null) {
-			expandedTokens = new HashMap<PromotionBuildTokens, String>(0);
-		}
-		return expandedTokens;
-	}
-	
-	public void setListener(TaskListener listener) {
-		this.listener = listener;
-	}
-	
-	protected TaskListener getListener() {
-		return listener;
-	}
-	
-	public static ExtensionList<Promotor> getAllPromoters() {
-		return Jenkins.getInstance().getExtensionList(Promotor.class);
-	}
-	
-	protected String getReleaseUser() {
-		return releaseUser;
-	}
-	
-	public void setReleaseUser(String releaseUser) {
-		this.releaseUser = releaseUser;
-	}
-	
-	protected Secret getReleasePassword() {
-		return releasePassword;
-	}
-	
-	public void setReleasePassword(Secret releasePassword) {
-		this.releasePassword = releasePassword;
-	}
-	
-	protected String getStagingUser() {
-		return stagingUser;
-	}
+    private TaskListener listener;
+    private Map<PromotionBuildTokens, String> expandedTokens;
+    private String localRepositoryURL;
 
-	public void setStagingUser(String stagingUser) {
-		this.stagingUser = stagingUser;
-	}
-	
-	protected Secret getStagingPassword() {
-		return stagingPassword;
-	}
-	
-	public void setStagingPassword(Secret stagingPassword) {
-		this.stagingPassword = stagingPassword;
-	}
+    private String stagingUser;
+    private Secret stagingPassword;
 
-	protected boolean isSkipDeletion() {
-		return skipDeletion;
-	}
+    private String releaseUser;
+    private Secret releasePassword;
 
-	public void setSkipDeletion(Boolean skipDeletion) {
-		this.skipDeletion = skipDeletion;
-	}
-	
+    private boolean skipDeletion;
+
+
+    public void setLocalRepositoryURL(String localRepositoryURL) {
+        this.localRepositoryURL = localRepositoryURL;
+    }
+
+    protected String getLocalRepositoryURL() {
+        return localRepositoryURL;
+    }
+
+    public void setExpandedTokens(
+            Map<PromotionBuildTokens, String> expandedTokens) {
+        this.expandedTokens = expandedTokens;
+    }
+
+    protected Map<PromotionBuildTokens, String> getExpandedTokens() {
+        if(expandedTokens == null) {
+            expandedTokens = new HashMap<PromotionBuildTokens, String>(0);
+        }
+        return expandedTokens;
+    }
+
+    public void setListener(TaskListener listener) {
+        this.listener = listener;
+    }
+
+    protected TaskListener getListener() {
+        return listener;
+    }
+
+//	TODO handle deprecation of getInstance
+    public static ExtensionList<Promotor> getAllPromoters() {
+        return Jenkins.getInstance().getExtensionList(Promotor.class);
+    }
+
+    protected String getReleaseUser() {
+        return releaseUser;
+    }
+
+    public void setReleaseUser(String releaseUser) {
+        this.releaseUser = releaseUser;
+    }
+
+    protected Secret getReleasePassword() {
+        return releasePassword;
+    }
+
+    public void setReleasePassword(Secret releasePassword) {
+        this.releasePassword = releasePassword;
+    }
+
+    protected String getStagingUser() {
+        return stagingUser;
+    }
+
+    public void setStagingUser(String stagingUser) {
+        this.stagingUser = stagingUser;
+    }
+
+    protected Secret getStagingPassword() {
+        return stagingPassword;
+    }
+
+    public void setStagingPassword(Secret stagingPassword) {
+        this.stagingPassword = stagingPassword;
+    }
+
+    protected boolean isSkipDeletion() {
+        return skipDeletion;
+    }
+
+    public void setSkipDeletion(Boolean skipDeletion) {
+        this.skipDeletion = skipDeletion;
+    }
+
 }
