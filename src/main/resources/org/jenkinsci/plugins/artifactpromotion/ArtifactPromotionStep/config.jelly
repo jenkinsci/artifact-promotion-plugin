@@ -1,64 +1,64 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
-    xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form">
 
     <f:section title="Artifact Information">
         <f:entry title="GroupId" field="groupId" description="The group ID of the artifact.">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
-        
+
         <f:entry title="ArtifactId" field="artifactId" description="The artifact ID of the artifact">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
-        
+
         <f:entry title="Classifier" field="classifier" description="The classifier of the artifact - optional">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
 
         <f:entry title="Version" field="version" description="The version of the artifact">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
-        
+
         <f:entry title="Extension" field="extension" description="The extension of the artifact - default is jar.">
-            <f:textbox />
+            <f:textbox default="jar"/>
         </f:entry>
     </f:section>
-    
+
     <f:section title="Staging Repository Information">
         <f:entry title="Repository URL" field="stagingRepository" description="The URL of the staging repository.">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
         <f:entry title="User" field="stagingUser" description="The User of the staging repository.">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
         <f:entry title="Password" field="stagingPW" description="The Password for the staging repository.">
-            <f:password />
+            <f:textbox/>
         </f:entry>
-        <f:entry title="Skip deletion" 
+        <f:entry title="Skip deletion"
                  field="skipDeletion" description="Skip artifact deletion from staging Repository.">
-            <f:checkbox default="true" />
-        </f:entry>       
+            <f:checkbox default="true"/>
+        </f:entry>
     </f:section>
 
     <f:section title="Release Repository Information">
         <f:entry title="Repository URL" field="releaseRepository" description="The URL of the release repository.">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
         <f:entry title="User" field="releaseUser" description="The User of the release repository.">
-            <f:textbox />
+            <f:textbox/>
         </f:entry>
         <f:entry title="Password" field="releasePW" description="The Password for the release repository.">
-            <f:password />
+            <f:textbox/>
         </f:entry>
     </f:section>
 
     <f:section title="Misc">
-	    <f:entry title="Repository system" field="promoterClass">
-	        <f:select />
-	    </f:entry>
+        <f:entry title="Repository system" field="promoterClass">
+            <f:select />
+        </f:entry>
         <f:entry title="Enable debug output" field="debug" description="Enable debug output in the job console.">
             <f:checkbox />
         </f:entry>
     </f:section>
-    
+
 </j:jelly>

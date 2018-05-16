@@ -23,15 +23,13 @@
 package org.jenkinsci.plugins.artifactpromotion;
 
 import hudson.ExtensionList;
-import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import hudson.util.Secret;
+import jenkins.model.Jenkins;
+import org.apache.tools.ant.ExtensionPoint;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import jenkins.model.Jenkins;
-
-import org.apache.tools.ant.ExtensionPoint;
 
 /**
  * 
@@ -42,7 +40,7 @@ import org.apache.tools.ant.ExtensionPoint;
  */
 public abstract class AbstractPromotor extends ExtensionPoint implements Promotor {
 
-	private BuildListener listener;
+	private TaskListener listener;
 	private Map<PromotionBuildTokens, String> expandedTokens;
 	private String localRepositoryURL;	
 	
@@ -75,11 +73,11 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
 		return expandedTokens;
 	}
 	
-	public void setListener(BuildListener listener) {
+	public void setListener(TaskListener listener) {
 		this.listener = listener;
 	}
 	
-	protected BuildListener getListener() {
+	protected TaskListener getListener() {
 		return listener;
 	}
 	

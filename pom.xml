@@ -27,11 +27,11 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.580</version>
+        <version>3.5</version>
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.4.1</version>
     <packaging>hpi</packaging>
     <inceptionYear>2014</inceptionYear>
     <licenses>
@@ -75,23 +75,36 @@
         <roles>
           <role>contributor</role>
         </roles>
-      </contributor>  
+      </contributor>
       <contributor>
         <name>Mate Farkas</name>
         <url>https://github.com/farkasmate</url>
         <roles>
             <role>contributor</role>
         </roles>
-      </contributor>    
-    </contributors>    
+      </contributor>
+      <contributor>
+        <name>Julian Sauer</name>
+        <email>julian_sauer@gmx.net</email>
+        <url>https://github.com/juliansauer</url>
+        <roles>
+          <role>contributor</role>
+        </roles>
+      </contributor>
+    </contributors>
 
     <properties>
-        <aetherVersion>1.0.0.v20140518</aetherVersion>
-        <commonsIoVersion>1.4</commonsIoVersion>
-        <mavenVersion>3.1.0</mavenVersion>
+        <java.level>8</java.level>
+        <jenkins.version>2.112</jenkins.version>
+        <aetherVersion>1.0.2.v20150114</aetherVersion>
+        <commonsIoVersion>2.4</commonsIoVersion>
+        <mavenVersion>3.3.9</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.9.1</jerseyVersion>
-        <jobdslVersion>1.35</jobdslVersion>
+        <jobdslVersion>1.69</jobdslVersion>
+        <basicStepVersion>2.7</basicStepVersion>
+        <scmapiVersion>2.2.7</scmapiVersion>
+        <workflowAggregatorVersion>2.5</workflowAggregatorVersion>
     </properties>
 
     <dependencies>
@@ -149,13 +162,29 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>token-macro</artifactId>
-            <version>1.6</version>
+            <version>2.0</version>
         </dependency>
         <dependency>
         	<groupId>org.jenkins-ci.plugins</groupId>
         	<artifactId>job-dsl</artifactId>
         	<version>${jobdslVersion}</version>
         	<optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-basic-steps</artifactId>
+            <version>${basicStepVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>scm-api</artifactId>
+            <version>${scmapiVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-aggregator</artifactId>
+            <version>${workflowAggregatorVersion}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -214,6 +243,15 @@
 			     <compatibleSinceVersion>0.3.0</compatibleSinceVersion>
 			  </configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

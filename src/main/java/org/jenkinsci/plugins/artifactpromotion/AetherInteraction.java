@@ -22,17 +22,8 @@
  */
 package org.jenkinsci.plugins.artifactpromotion;
 
-import hudson.model.BuildListener;
+import hudson.model.TaskListener;
 import hudson.util.Secret;
-
-import java.io.File;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -52,6 +43,13 @@ import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+
 
 /**
  * Interactions with aether.
@@ -63,9 +61,9 @@ public class AetherInteraction {
 	
         private final static String TEMP_DIR_PREFIX = "artifactpromotion";
 
-	private BuildListener listener;
+	private TaskListener listener;
         
-    public AetherInteraction(BuildListener listener) {
+    public AetherInteraction(TaskListener listener) {
         super();
         this.listener = listener;
     }
@@ -131,7 +129,7 @@ public class AetherInteraction {
      * 
      * @param session
      * @param system
-     * @param remoteRepos
+     * @param remoteRepo
      * @param groupId
      * @param artifactId
      * @param classifier

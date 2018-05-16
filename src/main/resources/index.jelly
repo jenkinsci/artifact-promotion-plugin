@@ -1,6 +1,7 @@
 <!--
   This view is used to render the installed plugins page.
 -->
+<?jelly escape-by-default='true'?>
 <div>
   This is a simple plugin to promote artifacts. 
   The promotion is done on the repository server(s) by moving the artifact from a 'staging' repository into a 'release' repository. Currently,

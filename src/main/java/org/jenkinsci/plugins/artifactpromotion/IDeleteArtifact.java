@@ -36,7 +36,6 @@ public interface IDeleteArtifact {
      * 
      * @param stagingRepo - The staging repository.
      * @param artifact - The artifact with all needed informations.
-     * @param logger - The jenkins logger, currently a simple output stream.
      * @throws IllegalStateException Thrown then something goes wrong.
      */
     public abstract void deleteArtifact(RemoteRepository stagingRepo, Artifact artifact)
