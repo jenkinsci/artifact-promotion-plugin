@@ -11,10 +11,10 @@ Due to this, an artifact promotion could only be handled by moving or copying an
 Some guys say this is an anti pattern like in [this blog](http://www.alwaysagileconsulting.com/articles/pipeline-antipattern-artifact-promotion/) but there is no chance to do it the right way with Nexus OSS.
 
 # Usage 
-The plugin is in development and should not be used currently for production environments as many parts are subject to change. Especially the support for multiple repository servers can change the GUI and result in some internal refactorings.
+The plugin is in development and you should consider that some parts are subject to change. Future changes can effect the GUI, pipeline code, the Job DSL interface and the configuration file, resulting in breaking changes while upgrading. We'll try to ensure to mark such changes, but you'll use the plugin at your own risk.
 
-## Job DSL
-The plugin adds an extension to the Job DSL plugin to allow defining Artifact Promotion build steps in Job DSL scripts. The extension can be used with the Job DSL plugin version 1.35 or higher.
+## Defining a Promotion Job using Job DSL
+The plugin adds an extension to the Job DSL plugin to allow defining Artifact Promotion build steps in Job DSL scripts. The extension can be used with the Job DSL plugin version 1.69 or higher.
 
 ```
 job {
@@ -75,7 +75,7 @@ stage('example') {
 ## Artifact deletion
 When you promote artifacts from the staging to the release repository you may want to remove the artifact from staging. If your artifact only has one associated file, the plugin works as expected.
 Although if you're using classifiers, deletion removes all files associated with the artifact. The *Skip deletion* option preserves the files in the staging repository. 
-Untick 'Skip deletion' only after you've promoted all the relevant files in prevous steps. Use a promotion step for each classifier.
+Untick 'Skip deletion' only after you've promoted all the relevant files in previous steps. Use a promotion step for each classifier.
 
 **ATTENTION:** Use the possibility to delete files very carefully!
 
@@ -88,12 +88,18 @@ Please feel free to contribute for other repository servers like
 * Artifactory and Aertifactory Pro
 * Apache Archiva
 
-Don't hesitate to come up with your suggestions.
+Additionally, we've don't yet support the Jenkins Credentials Plugin.
+
+Don't hesitate to come up with your suggestions. Pull requests are preferred as I'm limited in my time.
 
 # History
 
-* 0.3.6 - Support for Job DSL Plugin
+* 0.5.0 - Support for Jenkins Pipelines and minor bug fixes; upgrade dependency to Job DSL 1.69, Upgrade used Aether version
 * 0.4.0 - Support for Maven Classifiers
+* 0.3.6 - Support for Job DSL Plugin 
+
+# Known Issues
+[ ] The plugin doesn't supports Jenkins Credentials plugin. Due to this, credentials are written and saved in plain text then using Job DSL oder Pipeline DSL. (Hint: I would very appreciate a pull request implementing 
 
 # Useful links
 * Plugin Wiki page: [https://wiki.jenkins-ci.org/display/JENKINS/ArtifactPromotionPlugin](https://wiki.jenkins-ci.org/display/JENKINS/ArtifactPromotionPlugin)
