@@ -94,12 +94,12 @@ Don't hesitate to come up with your suggestions. Pull requests are preferred as 
 
 # History
 
-* 0.5.0 - Support for Jenkins Pipelines and minor bug fixes; upgrade dependency to Job DSL 1.69, Upgrade used Aether version
+* 0.5.1 - Support for Jenkins Pipelines and minor bug fixes; upgrade dependency to Job DSL 1.69, Upgrade used Aether version, fixes some FindBugs findings
 * 0.4.0 - Support for Maven Classifiers
 * 0.3.6 - Support for Job DSL Plugin 
 
 # Known Issues
-[ ] The plugin doesn't supports Jenkins Credentials plugin. Due to this, credentials are written and saved in plain text then using Job DSL oder Pipeline DSL. (Hint: I would very appreciate a pull request implementing 
+[ ] The plugin doesn't supports Jenkins Credentials plugin. Due to this, credentials are written and saved in plain text then using Job DSL oder Pipeline DSL. (Hint: I would very appreciate a pull request implementing this).
 
 # Useful links
 * Plugin Wiki page: [https://wiki.jenkins-ci.org/display/JENKINS/ArtifactPromotionPlugin](https://wiki.jenkins-ci.org/display/JENKINS/ArtifactPromotionPlugin)

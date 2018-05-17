@@ -93,9 +93,13 @@ public class AetherInteraction {
 
             File tempFile = File.createTempFile(TEMP_DIR_PREFIX, null);
             tempName = tempFile.getCanonicalPath();
-            tempFile.delete();
+            if (!tempFile.delete()) {
+                throw new IllegalStateException("Unable to delete temporary directory. Will stop here.");
+            }
             tempDirectory = new File(tempName);
-            tempDirectory.mkdir();
+            if (!tempDirectory.mkdir()) {
+                throw new IllegalStateException("Unable to create temporary directory. Will stop here.");
+            }
 
             DefaultRepositorySystemSession testSession = MavenRepositorySystemUtils.newSession();
             LocalRepository tempRepo = new LocalRepository(tempDirectory);
@@ -200,8 +204,8 @@ public class AetherInteraction {
         this.listener.getLogger().println("File :" + artifact.getFile());
         this.listener.getLogger().println("Properties:");
         Map<String, String> props = artifact.getProperties();
-        for (String key : props.keySet()) {
-            this.listener.getLogger().println("Key:" + key + " Value: " + props.get(key));
+        for (Map.Entry<String, String> entry : props.entrySet()) {
+            this.listener.getLogger().println("Key:" + entry.getKey() + " Value: " + entry.getValue());
         }
         this.listener.getLogger().println("Base-Version:" + artifact.getBaseVersion());
         this.listener.getLogger().println("Version: " + artifact.getVersion());
@@ -225,8 +229,8 @@ public class AetherInteraction {
             this.listener.getLogger().println("Version : " + metadata.getVersion());
             this.listener.getLogger().println("Nature : " + metadata.getNature());
             Map<String, String> props = metadata.getProperties();
-            for (String key : props.keySet()) {
-                this.listener.getLogger().println("Key:" + key + " Value: " + props.get(key));
+            for (Map.Entry<String, String> entry : props.entrySet()) {
+                this.listener.getLogger().println("Key:" + entry.getKey() + " Value: " + entry.getValue());
             }
         }
     }

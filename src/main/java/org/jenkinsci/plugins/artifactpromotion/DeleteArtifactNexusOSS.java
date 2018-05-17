@@ -32,6 +32,7 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 
 /**
  * This class is responsible to remove a artifact from a Nexus OSS repository.
@@ -89,8 +90,13 @@ public class DeleteArtifactNexusOSS implements IDeleteArtifact, Serializable {
         if (debug) listener.getLogger().println("Request URL is: [" + requestURL + "]");
 
         //TODO needs rework for anonymous access
-        String auth = new String(Base64.encode(this.user + ":" + Secret.toString(this.password)));
-        
+        String auth = null;
+        try {
+            auth = new String(Base64.encode(this.user + ":" + Secret.toString(this.password)), "UTF8");
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("The encoding UTF8 is not supported on your platform. Aborting here.");
+        }
+
         Client client = Client.create();
         WebResource webResource = client.resource(requestURL);
         ClientResponse response = webResource.header("Authorization", "Digest " + auth).type("application/json")
