@@ -54,9 +54,12 @@ job('example') {
 ## Pipeline
 For usage within Pipeline scripts use the snippet generator or see the example below:
 
+### Scripted pipeline
+
 ```
 stage('example') {
     artifactPromotion (
+        promoterClass: 'org.jenkinsci.plugins.artifactpromotion.NexusOSSPromotor',
         groupId: 'com.example.test',
         artifactId: 'my-artifact',
         version: '1.0.0',
@@ -69,6 +72,30 @@ stage('example') {
         releaseUser: 'foo',
         releasePW: 's3cr3t'
     )
+}
+```
+
+### Declarative pipeline
+
+```
+stage('example') {
+    steps {
+        artifactPromotion (
+            promoterClass: 'org.jenkinsci.plugins.artifactpromotion.NexusOSSPromotor',
+	    debug: false,
+            groupId: 'com.example.test',
+            artifactId: 'my-artifact',
+            version: '1.0.0',
+            extension: 'zip',
+            stagingRepository: 'http://nexus.myorg.com:8080/content/repositories/release-candidates',
+            stagingUser: 'foo',
+            stagingPW: 's3cr3t',
+            skipDeletion: true,
+            releaseRepository: 'http://nexus.myorg.com:8080/content/repositories/releases',
+            releaseUser: 'foo',
+            releasePW: 's3cr3t'
+        )
+    }
 }
 ```
 
