@@ -146,7 +146,7 @@ public class ArtifactPromotionStep extends Step implements Serializable {
     }
 
     public String getStagingPW() {
-        return artifactPromotionHelper.stagingPW.toString();
+        return artifactPromotionHelper.stagingPW.getPlainText();
     }
 
     public String getReleaseUser() {
