@@ -1,17 +1,17 @@
 /**
  * The MIT License
  * Copyright (c) 2014 Halil-Cem Guersoy and all contributors
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,9 +32,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 
+ *
  * Wraps needed informations and supply accessors to them.
- * 
+ *
  * @author Timo "timii" Paananen
  *
  */
@@ -51,7 +51,7 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
     private Secret releasePassword;
 
     private boolean skipDeletion;
-
+    private boolean debug;
 
     public void setLocalRepositoryURL(String localRepositoryURL) {
         this.localRepositoryURL = localRepositoryURL;
@@ -67,7 +67,7 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
     }
 
     protected Map<PromotionBuildTokens, String> getExpandedTokens() {
-        if(expandedTokens == null) {
+        if (expandedTokens == null) {
             expandedTokens = new HashMap<PromotionBuildTokens, String>(0);
         }
         return expandedTokens;
@@ -125,8 +125,16 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
         return skipDeletion;
     }
 
+    protected boolean isDebug() {
+        return debug;
+    }
+
     public void setSkipDeletion(Boolean skipDeletion) {
         this.skipDeletion = skipDeletion;
+    }
+
+    public void setDebug(Boolean debug) {
+        this.debug = debug;
     }
 
 }
