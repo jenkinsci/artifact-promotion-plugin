@@ -108,6 +108,29 @@ Untick 'Skip deletion' only after you've promoted all the relevant files in prev
 
 By default, the option *Skip deletion* is enabled.
 
+## Promotion POM artifacts
+
+Is possible to promote POM atifacts, like parent POM or multi module project descriptor, specifying the POM to be promoted and indicating the extension `pom`.
+
+```
+stage('example') {
+    artifactPromotion (
+        promoterClass: 'org.jenkinsci.plugins.artifactpromotion.NexusOSSPromotor',
+        groupId: 'com.example.test',
+        artifactId: 'my-pom-artifact',
+        version: '1.0.0',
+        extension: 'pom',
+        stagingRepository: 'http://nexus.myorg.com:8080/content/repositories/release-candidates',
+        stagingUser: 'foo',
+        stagingPW: 's3cr3t',
+        skipDeletion: true,
+        releaseRepository: 'http://nexus.myorg.com:8080/content/repositories/releases',
+        releaseUser: 'foo',
+        releasePW: 's3cr3t'
+    )
+}
+```
+
 # Contributions
 Please feel free to contribute for other repository servers like
 
@@ -121,6 +144,7 @@ Don't hesitate to come up with your suggestions. Pull requests are preferred as 
 
 # History
 
+* 0.5.2 - Allow promoting POM artifacts. Fix debug functionality in the delete function. 
 * 0.5.1 - Support for Jenkins Pipelines and minor bug fixes; upgrade dependency to Job DSL 1.69, Upgrade used Aether version, fixes some FindBugs findings
 * 0.4.0 - Support for Maven Classifiers
 * 0.3.6 - Support for Job DSL Plugin 
