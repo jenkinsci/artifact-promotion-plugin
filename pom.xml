@@ -91,6 +91,14 @@
           <role>contributor</role>
         </roles>
       </contributor>
+      <contributor>
+        <name>Nicolas Fantoni</name>
+        <email>fantoni.nico@gmail.com</email>
+        <url>https://github.com/nfantoni</url>
+        <roles>
+            <role>contributor</role>
+        </roles>
+      </contributor>
     </contributors>
 
     <properties>
