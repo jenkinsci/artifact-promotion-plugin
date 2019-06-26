@@ -108,9 +108,9 @@ Untick 'Skip deletion' only after you've promoted all the relevant files in prev
 
 By default, the option *Skip deletion* is enabled.
 
-## Promotion POM artifacts
+## Promoting POM artifacts
 
-Is possible to promote POM atifacts, like parent POM or multi module project descriptor, specifying the POM to be promoted and indicating the extension `pom`.
+Starting with version 0.5.2 it is possible to promote POM artifacts, like parent POM or multi module project descriptions, specifying the POM to be promoted and indicating the extension `pom`.
 
 ```
 stage('example') {
