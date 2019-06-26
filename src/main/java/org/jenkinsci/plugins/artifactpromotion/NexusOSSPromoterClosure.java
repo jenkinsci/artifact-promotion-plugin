@@ -48,6 +48,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
     private Secret stagingPassword;
     private boolean skipDeletion;
     private TaskListener listener;
+    private boolean debug;
 
 
     /**
@@ -66,7 +67,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
             Map<PromotionBuildTokens, String> expandedTokens,
             String releaseUser, Secret releasePassword,
             String stagingUser, Secret stagingPassword,
-            boolean skipDeletion) {
+            boolean skipDeletion, boolean debug) {
         super();
 
         this.expandedTokens = expandedTokens;
@@ -77,6 +78,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
         this.stagingPassword = stagingPassword;
         this.localRepositoryURL = localRepositoryURL;
         this.skipDeletion = skipDeletion;
+        this.debug = debug;
     }
 
     /* (non-Javadoc)
@@ -176,7 +178,7 @@ public class NexusOSSPromoterClosure implements Serializable, IPromotorClosure {
     private void deleteArtifact(RemoteRepository aetherStagingRepo,
             ArtifactWrapper artifact) {
         IDeleteArtifact deleter = new DeleteArtifactNexusOSS(this.listener, this.stagingUser,
-                this.stagingPassword, false);
+                this.stagingPassword, this.debug);
         deleter.deleteArtifact(aetherStagingRepo, artifact.getArtifact());
     }
 

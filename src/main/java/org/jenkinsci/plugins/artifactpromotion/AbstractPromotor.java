@@ -51,7 +51,7 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
     private Secret releasePassword;
 
     private boolean skipDeletion;
-
+    private boolean debug;
 
     public void setLocalRepositoryURL(String localRepositoryURL) {
         this.localRepositoryURL = localRepositoryURL;
@@ -67,7 +67,7 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
     }
 
     protected Map<PromotionBuildTokens, String> getExpandedTokens() {
-        if(expandedTokens == null) {
+        if (expandedTokens == null) {
             expandedTokens = new HashMap<PromotionBuildTokens, String>(0);
         }
         return expandedTokens;
@@ -125,8 +125,16 @@ public abstract class AbstractPromotor extends ExtensionPoint implements Promoto
         return skipDeletion;
     }
 
+    protected boolean isDebug() {
+        return debug;
+    }
+
     public void setSkipDeletion(Boolean skipDeletion) {
         this.skipDeletion = skipDeletion;
+    }
+
+    public void setDebug(Boolean debug) {
+        this.debug = debug;
     }
 
 }

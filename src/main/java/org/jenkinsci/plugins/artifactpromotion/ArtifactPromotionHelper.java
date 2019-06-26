@@ -185,6 +185,7 @@ public class ArtifactPromotionHelper implements Serializable {
         artifactPromotor.setStagingPassword(stagingPW);
         artifactPromotor.setStagingUser(stagingUser);
         artifactPromotor.setSkipDeletion(skipDeletion);
+        artifactPromotor.setDebug(debug);
 
         String localRepoPath = workspace.getRemote() + File.separator
                 + this.localRepoLocation;

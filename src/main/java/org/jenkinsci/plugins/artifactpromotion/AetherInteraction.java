@@ -88,25 +88,33 @@ public class AetherInteraction {
 
         String tempName = null;
         File tempDirectory = null;
+
         try {
-            this.listener.getLogger().println("Checking if POM already exists in releaserepo");
 
-            File tempFile = File.createTempFile(TEMP_DIR_PREFIX, null);
-            tempName = tempFile.getCanonicalPath();
-            if (!tempFile.delete()) {
-                throw new IllegalStateException("Unable to delete temporary directory. Will stop here.");
+            if(artifact.getExtension().equalsIgnoreCase("pom"))
+                this.listener.getLogger().println("Promoting POM artifact");
+            else
+            {
+                this.listener.getLogger().println("Checking if POM already exists in releaserepo");
+
+                File tempFile = File.createTempFile(TEMP_DIR_PREFIX, null);
+                tempName = tempFile.getCanonicalPath();
+                if (!tempFile.delete()) {
+                    throw new IllegalStateException("Unable to delete temporary directory. Will stop here.");
+                }
+                tempDirectory = new File(tempName);
+                if (!tempDirectory.mkdir()) {
+                    throw new IllegalStateException("Unable to create temporary directory. Will stop here.");
+                }
+
+                DefaultRepositorySystemSession testSession = MavenRepositorySystemUtils.newSession();
+                LocalRepository tempRepo = new LocalRepository(tempDirectory);
+                testSession.setLocalRepositoryManager(system.newLocalRepositoryManager(testSession, tempRepo));
+
+                Artifact testPom = getArtifact(testSession, system, releaseRepo, pom.getGroupId(), pom.getArtifactId(), null,
+                        ArtifactPromotionBuilder.POMTYPE, pom.getVersion());
             }
-            tempDirectory = new File(tempName);
-            if (!tempDirectory.mkdir()) {
-                throw new IllegalStateException("Unable to create temporary directory. Will stop here.");
-            }
 
-            DefaultRepositorySystemSession testSession = MavenRepositorySystemUtils.newSession();
-            LocalRepository tempRepo = new LocalRepository(tempDirectory);
-            testSession.setLocalRepositoryManager(system.newLocalRepositoryManager(testSession, tempRepo));
-
-            Artifact testPom = getArtifact(testSession, system, releaseRepo, pom.getGroupId(), pom.getArtifactId(), null,
-                    ArtifactPromotionBuilder.POMTYPE, pom.getVersion());
         } catch(IOException e) {
             this.listener.getLogger().println("Cannot create temp file, POM file will be deployed");
             deployRequest.addArtifact(pom);
