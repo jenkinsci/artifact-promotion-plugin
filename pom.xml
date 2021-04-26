@@ -105,7 +105,7 @@
         <java.level>8</java.level>
         <jenkins.version>2.112</jenkins.version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
-        <commonsIoVersion>2.4</commonsIoVersion>
+        <commonsIoVersion>2.7</commonsIoVersion>
         <mavenVersion>3.3.9</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.19.4</jerseyVersion>
