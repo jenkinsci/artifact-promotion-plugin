@@ -1,10 +1,5 @@
 # Artifact Promotion Plugin
 
-> :exclamation: :warning:
-> **This plugin is up for adoption!**
-> We are looking for new maintainers.
-> Visit our [Adopt a Plugin](https://jenkins.io/doc/developer/plugin-governance/adopt-a-plugin/) initiative for more information.
-
 This is a simple plugin to *promote* artifacts. This is done on the artifact repository server and due to this the promotion process is specific to the used repository server.
 
 In the first step, this plugin will support Sonatype Nexus OSS.
@@ -13,7 +8,7 @@ In the first step, this plugin will support Sonatype Nexus OSS.
 Nexus OSS doesn't support staging repositories like Nexus Pro. And, in addition, it does't support custom metadata.
 Due to this, an artifact promotion could only be handled by moving or copying an artifact from a staging repository into a 'release' repository (... or however you want to call your stage).
 
-Some guys say this is an anti pattern like in [this blog](http://www.alwaysagileconsulting.com/articles/pipeline-antipattern-artifact-promotion/) but there is no chance to do it the right way with Nexus OSS.
+Some guys say this is an anti pattern like in [this blog](https://www.stevesmith.tech/blog/pipeline-antipattern-artifact-promotion/) but there is no chance to do it the right way with Nexus OSS.
 
 # Usage
 The plugin is in development and you should consider that some parts are subject to change. Future changes can effect the GUI, pipeline code, the Job DSL interface and the configuration file, resulting in breaking changes while upgrading. We'll try to ensure to mark such changes, but you'll use the plugin at your own risk.
