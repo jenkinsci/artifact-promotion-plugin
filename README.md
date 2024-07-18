@@ -135,12 +135,14 @@ stage('example') {
 Please feel free to contribute for other repository servers like
 
 * Nexus Pro
-* Artifactory and Aertifactory Pro
+* Artifactory and Artifactory Pro
 * Apache Archiva
 
 Additionally, we've don't yet support the Jenkins Credentials Plugin.
 
-Don't hesitate to come up with your suggestions. Pull requests are preferred as I'm limited in my time.
+Don't hesitate to come up with your suggestions. Pull requests are preferred to speed up releases.
+
+Checking compatibility with new Jenkins versions is also greatly appreciated, reporting any problems and/or proposing any fixes.
 
 # History
 
