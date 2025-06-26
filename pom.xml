@@ -27,7 +27,8 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.5</version>
+        <version>4.88</version>
+        <relativePath />
     </parent>
 
     <artifactId>artifact-promotion</artifactId>
@@ -102,8 +103,9 @@
     </contributors>
 
     <properties>
-        <java.level>8</java.level>
-        <jenkins.version>2.112</jenkins.version>
+        <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
+        <jenkins.baseline>2.462</jenkins.baseline>
+        <jenkins.version>${jenkins.baseline}.3</jenkins.version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
         <commonsIoVersion>2.4</commonsIoVersion>
         <mavenVersion>3.3.9</mavenVersion>
@@ -114,6 +116,24 @@
         <scmapiVersion>2.2.7</scmapiVersion>
         <workflowAggregatorVersion>2.5</workflowAggregatorVersion>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-${jenkins.baseline}.x</artifactId>
+                <version>3893.v213a_42768d35</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jenkins.tools.bom</groupId>
+                <artifactId>bom-weekly</artifactId>
+                <version>3893.v213a_42768d35</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -154,7 +174,6 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commonsIoVersion}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -170,24 +189,20 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>token-macro</artifactId>
-            <version>2.0</version>
         </dependency>
         <dependency>
         	<groupId>org.jenkins-ci.plugins</groupId>
         	<artifactId>job-dsl</artifactId>
-        	<version>${jobdslVersion}</version>
         	<optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-basic-steps</artifactId>
-            <version>${basicStepVersion}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>scm-api</artifactId>
-            <version>${scmapiVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -255,7 +270,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
