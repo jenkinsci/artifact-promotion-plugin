@@ -111,7 +111,7 @@
         <mavenVersion>3.3.9</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
         <jerseyVersion>1.19.4</jerseyVersion>
-        <jobdslVersion>1.69</jobdslVersion>
+        <jobdslVersion>1.72</jobdslVersion>
         <basicStepVersion>2.7</basicStepVersion>
         <scmapiVersion>2.2.7</scmapiVersion>
         <workflowAggregatorVersion>2.5</workflowAggregatorVersion>
