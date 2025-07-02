@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.88</version>
+        <version>5.18</version>
         <relativePath />
     </parent>
 
@@ -52,15 +52,6 @@
         <developerConnection>scm:git:https://git@github.com/jenkinsci/artifact-promotion-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/artifact-promotion-plugin</url>
     </scm>
-
-    <developers>
-        <developer>
-            <id>hcguersoy</id>
-            <name>Halil-Cem Gürsoy</name>
-            <email>hcguersoy@gmail.com</email>
-            <url>https://github.com/hcguersoy</url>
-        </developer>
-    </developers>
     <contributors>
       <contributor>
         <name>Timo "timii" Paananen</name>
@@ -104,7 +95,7 @@
 
     <properties>
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-        <jenkins.baseline>2.462</jenkins.baseline>
+        <jenkins.baseline>2.492</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
         <aetherVersion>1.0.2.v20150114</aetherVersion>
         <commonsIoVersion>2.7</commonsIoVersion>
@@ -121,14 +112,7 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-${jenkins.baseline}.x</artifactId>
-                <version>3893.v213a_42768d35</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-weekly</artifactId>
-                <version>3893.v213a_42768d35</version>
+                <version>4969.v6ffa_18d90c9f</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

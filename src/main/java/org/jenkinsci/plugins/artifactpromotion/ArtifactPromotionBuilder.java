@@ -38,7 +38,7 @@ import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.artifactpromotion.exception.PromotionException;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -149,7 +149,7 @@ public class ArtifactPromotionBuilder extends Builder implements SimpleBuildStep
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject formData)
+        public boolean configure(StaplerRequest2 req, JSONObject formData)
                 throws FormException {
             // To persist global configuration information,
             // set that to properties and call save().
