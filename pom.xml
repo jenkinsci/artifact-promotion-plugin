@@ -106,7 +106,7 @@
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
         <jenkins.baseline>2.462</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
-        <aetherVersion>1.0.2.v20150114</aetherVersion>
+        <aetherVersion>1.1.0</aetherVersion>
         <commonsIoVersion>2.7</commonsIoVersion>
         <mavenVersion>3.3.9</mavenVersion>
         <wagonVersion>1.0</wagonVersion>
