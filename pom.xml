@@ -105,7 +105,7 @@
         <jobdslVersion>1.72</jobdslVersion>
         <basicStepVersion>2.7</basicStepVersion>
         <scmapiVersion>2.2.7</scmapiVersion>
-        <workflowAggregatorVersion>2.5</workflowAggregatorVersion>
+        <workflowAggregatorVersion>608.v67378e9d3db_1</workflowAggregatorVersion>
     </properties>
     <dependencyManagement>
         <dependencies>
