@@ -111,7 +111,8 @@ public class AetherInteraction {
                 LocalRepository tempRepo = new LocalRepository(tempDirectory);
                 testSession.setLocalRepositoryManager(system.newLocalRepositoryManager(testSession, tempRepo));
 
-                Artifact testPom = getArtifact(testSession, system, releaseRepo, pom.getGroupId(), pom.getArtifactId(), null,
+                // Check if POM exists - we don't need the artifact itself, just whether it can be resolved
+                getArtifact(testSession, system, releaseRepo, pom.getGroupId(), pom.getArtifactId(), null,
                         ArtifactPromotionBuilder.POMTYPE, pom.getVersion());
             }
 
