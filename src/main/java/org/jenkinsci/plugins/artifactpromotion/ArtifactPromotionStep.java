@@ -32,7 +32,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.steps.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import javax.annotation.Nonnull;
 import java.io.PrintStream;
@@ -197,7 +197,7 @@ public class ArtifactPromotionStep extends Step implements Serializable {
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject formData)
+        public boolean configure(StaplerRequest2 req, JSONObject formData)
                 throws FormException {
             // To persist global configuration information,
             // set that to properties and call save().

@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.88</version>
+        <version>5.27</version>
         <relativePath />
     </parent>
 
@@ -52,15 +52,6 @@
         <developerConnection>scm:git:https://git@github.com/jenkinsci/artifact-promotion-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/artifact-promotion-plugin</url>
     </scm>
-
-    <developers>
-        <developer>
-            <id>hcguersoy</id>
-            <name>Halil-Cem Gürsoy</name>
-            <email>hcguersoy@gmail.com</email>
-            <url>https://github.com/hcguersoy</url>
-        </developer>
-    </developers>
     <contributors>
       <contributor>
         <name>Timo "timii" Paananen</name>
@@ -104,7 +95,7 @@
 
     <properties>
         <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
-        <jenkins.baseline>2.462</jenkins.baseline>
+        <jenkins.baseline>2.504</jenkins.baseline>
         <jenkins.version>${jenkins.baseline}.3</jenkins.version>
         <aetherVersion>1.1.0</aetherVersion>
         <commonsIoVersion>2.7</commonsIoVersion>
@@ -121,16 +112,20 @@
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-${jenkins.baseline}.x</artifactId>
-                <version>4228.v0a_71308d905b_</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-weekly</artifactId>
                 <version>5601.v59f37270a_349</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- Override old versions from maven-aether-provider to satisfy enforcer plugin -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.19.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>2.36.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -209,6 +204,11 @@
             <artifactId>workflow-aggregator</artifactId>
             <version>${workflowAggregatorVersion}</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
